@@ -35,9 +35,20 @@ Para ubicar cada archivo del proyecto, ver [docs/Guia_Navegacion_Proyecto.md](do
 1. **Descargar el proyecto.** Clonar el repositorio o descomprimir `Primera_Entrega_Proyecto_Grupo04.zip`.
 2. **Crear las bases de datos.** Abrir `database/Script_BD_AerolineaVIP_Unificado.sql` en SQL Server Management Studio y ejecutarlo completo. Crea `AerolineaVIP` (negocio) y `AerolineaVIP_Identity` (usuarios y roles).
 3. **Revisar la conexión.** En `src/AerolineaVIP/Web.config`, las cadenas de conexión usan autenticación de Windows con `Data Source=.` y `localhost`. Si el servidor tiene otro nombre, cambiarlo en `DefaultConnection` y `AerolineaVIPEntities`.
-4. **Abrir la solución.** Abrir `src/AerolineaVIP.slnx` en Visual Studio.
+4. **Abrir la solución.** Ver el detalle en la sección 3.2.
 5. **Compilar.** Menú *Compilar > Recompilar solución*. Visual Studio restaura los paquetes NuGet automáticamente; el resultado esperado es 0 errores.
 6. **Ejecutar.** Pulsar F5 (IIS Express). El sitio abre en `https://localhost:44346`.
+
+### 3.2 Dónde y cómo abrir el proyecto en Visual Studio
+
+1. Abrir **Visual Studio** desde el menú Inicio de Windows.
+2. En la pantalla de inicio, pulsar **Abrir un proyecto o una solución** (o *Archivo > Abrir > Proyecto o solución*).
+3. Navegar a la carpeta del repositorio, entrar en `src` y seleccionar el archivo **`AerolineaVIP.slnx`**. No abrir el `.csproj` suelto.
+4. Esperar a que cargue. En el **Explorador de soluciones** (panel derecho) aparece *Solución "AerolineaVIP" (1 de 1 proyecto)* y, debajo, el proyecto **AerolineaVIP**.
+5. Si Visual Studio pregunta por restaurar paquetes NuGet, aceptar; si no pregunta, clic derecho sobre la solución y elegir **Restaurar paquetes NuGet**.
+6. Menú **Compilar > Recompilar solución**. En la ventana *Salida* debe aparecer *Recompilar: 1 correcto, 0 erróneos*.
+7. En la barra superior, comprobar que el botón verde de ejecución dice **IIS Express** y pulsarlo (o presionar **F5**).
+8. Se abre el navegador en `https://localhost:44346`. Si aparece una advertencia de certificado de IIS Express, aceptarla o confiar en el certificado de desarrollo.
 
 Al iniciar, `Global.asax.cs` crea por código los 7 roles y los 7 usuarios iniciales, así que no hace falta cargarlos a mano.
 
