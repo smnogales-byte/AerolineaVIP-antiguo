@@ -1,0 +1,140 @@
+﻿@model Progra_03.Models.AdminGestionVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Usuarios, pasajeros y reservas";
+}
+<h1 class="h3 titulo-pantalla">Gestión de usuarios, pasajeros y reservas</h1>
+<p class="subtitulo-pantalla">Consulta autorizada@(Model.EsSuperUsuario ? ". Como SuperUsuario también puede asignar roles." : ". La asignación de roles es exclusiva del SuperUsuario.")</p>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link @(Model.Pestana == "usuarios" ? "active" : "")" href="@Url.Action("Gestion", new { pestana = "usuarios" })">Usuarios</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Pestana == "pasajeros" ? "active" : "")" href="@Url.Action("Gestion", new { pestana = "pasajeros" })">Pasajeros</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Pestana == "reservas" ? "active" : "")" href="@Url.Action("Gestion", new { pestana = "reservas" })">Reservas</a></li>
+</ul>
+
+<div class="panel-vip">
+    @using (Html.BeginForm("Gestion", "Admin", FormMethod.Get))
+    {
+        <input type="hidden" name="pestana" value="@Model.Pestana" />
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-5">
+                <label class="form-label" for="buscar">Buscar</label>
+                <input type="text" id="buscar" name="buscar" class="form-control" value="@Model.Buscar"
+                       placeholder="@(Model.Pestana == "usuarios" ? "Usuario o correo" : (Model.Pestana == "pasajeros" ? "Documento, nombres o apellidos" : "Código de reserva"))" />
+            </div>
+            @if (Model.Pestana == "usuarios")
+            {
+                <div class="col-12 col-md-3"><label class="form-label" for="rol">Rol</label>
+                    @Html.DropDownList("rol", Model.RolesLista, "Todos", new { @class = "form-select", id = "rol" })</div>
+            }
+            @if (Model.Pestana == "reservas")
+            {
+                <div class="col-12 col-md-3"><label class="form-label" for="estado">Estado</label>
+                    <select id="estado" name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var e in new[] { "PENDIENTE", "CONFIRMADA", "CANCELADA", "EXPIRADA" })
+                        {
+                            <option value="@e" @(Model.Estado == e ? "selected" : "")>@Fmt.EstadoReserva(e)</option>
+                        }
+                    </select></div>
+            }
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-noche">Buscar</button>
+                <a class="btn btn-outline-secondary" href="@Url.Action("Gestion", new { pestana = Model.Pestana })">Limpiar</a>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="panel-vip table-responsive">
+@if (Model.Pestana == "usuarios")
+{
+    if (Model.Usuarios.Count == 0)
+    {
+        <p class="text-muted mb-0">No se encontraron usuarios.</p>
+    }
+    else
+    {
+        <table class="table table-sm table-vip">
+            <thead><tr><th>Usuario</th><th>Correo</th><th>Roles</th><th>Estado</th>@if (Model.EsSuperUsuario) { <th>Asignar roles</th> }</tr></thead>
+            <tbody>
+                @foreach (var u in Model.Usuarios)
+                {
+                    <tr>
+                        <td>@u.UserName</td>
+                        <td>@u.Email</td>
+                        <td>@foreach (var r in u.Roles) { <span class="badge text-bg-dark me-1">@r</span> }</td>
+                        <td>@(u.Bloqueado ? "Bloqueado" : "Activo")</td>
+                        @if (Model.EsSuperUsuario)
+                        {
+                            <td>
+                                @using (Html.BeginForm("AsignarRoles", "Admin", FormMethod.Post, new { @class = "d-flex flex-wrap gap-2 align-items-center" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@u.Id" />
+                                    foreach (var item in Model.RolesLista)
+                                    {
+                                        string idChk = "r_" + u.Id + "_" + item.Value;
+                                        <span class="form-check form-check-inline m-0">
+                                            <input class="form-check-input" type="checkbox" name="roles" id="@idChk" value="@item.Value" @(u.Roles.Contains(item.Value) ? "checked" : "") />
+                                            <label class="form-check-label small" for="@idChk">@item.Text</label>
+                                        </span>
+                                    }
+                                    <button type="submit" class="btn btn-sm btn-outline-dark">Guardar</button>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+else if (Model.Pestana == "pasajeros")
+{
+    if (Model.Pasajeros.Count == 0)
+    {
+        <p class="text-muted mb-0">No se encontraron pasajeros.</p>
+    }
+    else
+    {
+        <table class="table table-sm table-vip">
+            <thead><tr><th>Documento</th><th>Nombres</th><th>Apellidos</th><th>Correo</th><th>Teléfono</th><th>Registrado</th></tr></thead>
+            <tbody>
+                @foreach (var p in Model.Pasajeros)
+                {
+                    <tr><td>@p.TipoDocumentoCodigo @p.NumeroDocumento</td><td>@p.Nombres</td><td>@p.Apellidos</td><td>@p.Correo</td><td>@p.Telefono</td><td>@Fmt.Fecha(p.FechaRegistro)</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+else
+{
+    if (Model.Reservas.Count == 0)
+    {
+        <p class="text-muted mb-0">No se encontraron reservas.</p>
+    }
+    else
+    {
+        <table class="table table-sm table-vip">
+            <thead><tr><th>Código</th><th>Ruta</th><th>Viaje</th><th>Pasajeros</th><th class="text-end">Total</th><th>Reserva</th><th>Compra</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.Reservas)
+                {
+                    <tr>
+                        <td>@r.CodigoReserva</td>
+                        <td>@(Model.RutasReservas.ContainsKey(r.ReservaId) ? Model.RutasReservas[r.ReservaId] : "—")</td>
+                        <td>@(r.FechaViaje.HasValue ? Fmt.Fecha(r.FechaViaje.Value) : "—")</td>
+                        <td>@r.Pasajeros</td>
+                        <td class="text-end">@Fmt.Dinero(r.Total)</td>
+                        <td><span class="badge @Fmt.ClaseEstado(r.EstadoReservaCodigo)">@Fmt.EstadoReserva(r.EstadoReservaCodigo)</span></td>
+                        <td>@(string.IsNullOrEmpty(r.EstadoCompra) ? "—" : Fmt.EstadoCompra(r.EstadoCompra))</td>
+                        <td><a class="btn btn-sm btn-outline-dark" href="@Url.Action("Gestionar", "Reservas", new { id = r.ReservaId })">Ver</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+</div>

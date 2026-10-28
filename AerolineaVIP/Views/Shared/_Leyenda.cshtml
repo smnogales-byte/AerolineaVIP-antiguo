@@ -1,0 +1,10 @@
+﻿@* Leyenda de estados de asiento. El color siempre va acompañado del texto. *@
+<div class="leyenda-asientos" aria-label="Leyenda de asientos">
+    <span><span class="muestra verde"></span>Disponible (verde)</span>
+    <span><span class="muestra morado"></span>Reservado, pendiente de pago (morado)</span>
+    <span><span class="muestra rojo"></span>Ocupado, pagado (rojo)</span>
+    @if (ViewBag.MostrarElegido == true)
+    {
+        <span><span class="muestra elegida"></span>Su selección (verde con borde negro y ✓)</span>
+    }
+</div>

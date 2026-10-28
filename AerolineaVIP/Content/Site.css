@@ -1,20 +1,65 @@
-﻿/* Set padding to keep content from hitting the edges */
-.body-content {
-    margin-top: 15px;
-    padding-left: 15px;
-    padding-right: 15px;
-}
+﻿/* Aerolinea VIP - estilos minimos sobre Bootstrap 5 (mismo esquema del molde).
+   Solo se definen la semantica de los asientos y unos pocos utilitarios. */
+body { padding-top: 0; }
+.body-content { margin-top: 20px; padding-bottom: 20px; }
 
-/* Override the default bootstrap behavior where horizontal description lists 
-   will truncate terms that are too long to fit in the left column 
-*/
-.dl-horizontal dt {
-    white-space: normal;
-}
+/* Bloques sencillos usados por las vistas */
+.hero-vip { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: .5rem; padding: 2rem; margin-bottom: 1.5rem; }
+.buscador-vip, .panel-vip, .comprobante { background: #fff; border: 1px solid #dee2e6; border-radius: .5rem; padding: 1rem; margin-bottom: 1rem; }
+.tarjeta-destino { height: 100%; }
+.tarjeta-destino .franja { display: none; }
+.icono-vip { display: inline-block; width: 2rem; height: 2rem; line-height: 2rem; text-align: center; border-radius: 50%; background: #212529; color: #fff; font-weight: 600; }
+.text-dorado { color: #6c757d; }
+.btn-vip { background: #0d6efd; border-color: #0d6efd; color: #fff; }
+.btn-vip:hover, .btn-vip:focus { background: #0b5ed7; border-color: #0a58ca; color: #fff; }
+.btn-noche { background: #212529; border-color: #212529; color: #fff; }
+.btn-noche:hover { background: #424649; border-color: #373b3e; color: #fff; }
+.titulo-pantalla { margin-bottom: .25rem; }
+.subtitulo-pantalla { color: #6c757d; margin-bottom: 1rem; }
+.cifra-panel { font-size: 2rem; font-weight: 600; line-height: 1; }
+.hora-grande { font-size: 1.4rem; font-weight: 600; }
+.tarjeta-vuelo { border-left: 4px solid #0d6efd; }
+.tarjeta-vuelo.no-disponible { border-left-color: #adb5bd; opacity: .8; }
+.linea-ruta { height: 2px; background: #ced4da; flex: 1; margin: 0 10px; }
 
-/* Set width on the form input elements since they're 100% wide by default */
-input,
-select,
-textarea {
-    max-width: 280px;
+/* Indicador de pasos */
+.pasos { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 1rem; }
+.pasos li { flex: 1 1 110px; text-align: center; padding: 6px; font-size: .85rem; border-radius: .375rem; background: #e9ecef; color: #495057; }
+.pasos li.activo { background: #212529; color: #fff; font-weight: 600; }
+.pasos li.hecho { background: #d1e7dd; color: #0f5132; }
+
+/* Mapa de asientos: verde disponible, rojo ocupado, morado reservado (obligatorio) */
+.cabina { display: grid; grid-template-columns: 64px 36px 64px; gap: 8px 0; justify-content: center; padding: 16px 12px; background: #f1f3f5; border: 2px solid #ced4da; border-radius: 40px 40px 12px 12px; max-width: 260px; margin: 0 auto; }
+.cabina .pasillo { grid-column: 2; }
+.cabina .fila-num { grid-column: 1 / -1; text-align: center; font-size: .7rem; color: #868e96; }
+.asiento { width: 56px; height: 52px; border-radius: 10px 10px 4px 4px; border: 2px solid transparent; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; position: relative; padding: 0; }
+.asiento small { position: absolute; bottom: 1px; font-size: .55rem; font-weight: 600; }
+.asiento.disponible { background: #198754; }
+.asiento.reservado { background: #6f42c1; }
+.asiento.ocupado { background: #dc3545; }
+.asiento.puerta { background: transparent; border: 2px dashed #adb5bd; color: #868e96; font-size: .6rem; }
+button.asiento.disponible { cursor: pointer; }
+button.asiento.disponible:hover, button.asiento.disponible:focus { outline: 3px solid #0d6efd; }
+.asiento.reservado, .asiento.ocupado { cursor: not-allowed; }
+.asiento.elegido { background: #198754; border: 3px solid #000; }
+.asiento.elegido::after { content: "\2713"; position: absolute; top: 1px; right: 5px; font-size: .8rem; }
+.leyenda-asientos { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; justify-content: center; margin-top: 10px; }
+.leyenda-asientos .muestra { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+.muestra.verde { background: #198754; }
+.muestra.morado { background: #6f42c1; }
+.muestra.rojo { background: #dc3545; }
+.muestra.elegida { background: #198754; border: 2px solid #000; }
+
+/* Formularios y validacion */
+input, select, textarea { max-width: 100%; }
+.text-danger, .field-validation-error { color: #b42318 !important; font-size: .875rem; }
+.input-validation-error { border-color: #b42318; }
+.marca-tarjeta img { height: 28px; margin-right: 6px; }
+.dl-horizontal dt { white-space: normal; }
+.comprobante { max-width: 820px; margin: 0 auto; }
+.comprobante .marca-agua { color: #9a1c1c; font-weight: 700; text-transform: uppercase; font-size: .85rem; }
+
+@media print {
+    .navbar, footer, .no-imprimir, .btn { display: none !important; }
+    .comprobante { border: 0; padding: 0; }
 }

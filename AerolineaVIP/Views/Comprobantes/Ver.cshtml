@@ -1,0 +1,47 @@
+﻿@model Progra_03.Models.ComprobantesVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Comprobante académico";
+    var c = Model.Seleccionado;
+}
+<div class="no-imprimir mb-3 d-flex gap-2">
+    <button type="button" class="btn btn-vip" onclick="window.print()">Imprimir / guardar como PDF</button>
+    <a class="btn btn-outline-secondary" href="@Url.Action("Index")">Volver</a>
+</div>
+
+<article class="comprobante">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="h4 mb-0">@c.EmisorNombre</h1>
+            <div class="small">Identificación: @c.EmisorIdentificacion</div>
+            <div class="small">@c.EmisorDireccion</div>
+        </div>
+        <div class="text-end">
+            <div class="fw-bold">@Fmt.TipoComprobante(c.TipoComprobanteCodigo)</div>
+            <div>N.º @c.NumeroComprobante</div>
+            <div class="small">@Fmt.FechaHora(c.FechaEmision)</div>
+        </div>
+    </div>
+    <p class="marca-agua mt-3 mb-2">Documento académico, sin validez tributaria</p>
+    <p class="small">@c.LeyendaComprobante</p>
+    <hr />
+    <dl class="row small mb-3">
+        <dt class="col-3">Reserva</dt><dd class="col-9">@c.CodigoReserva</dd>
+        <dt class="col-3">Operación de pago</dt><dd class="col-9">@(c.CodigoOperacion ?? "—") (simulada)</dd>
+        <dt class="col-3">Medio de pago</dt><dd class="col-9">@(c.MetodoPago ?? "—") · @c.MarcaTarjeta @c.TarjetaEnmascarada</dd>
+    </dl>
+    <table class="table table-sm">
+        <thead><tr><th>Vuelo</th><th>Ruta</th><th>Fecha</th><th>Pasajero</th><th>Asiento</th><th class="text-end">Importe</th></tr></thead>
+        <tbody>
+            @foreach (var l in Model.Detalle)
+            {
+                <tr>
+                    <td>@l.CodigoVuelo</td><td>@l.CiudadOrigen → @l.CiudadDestino</td><td>@Fmt.Fecha(l.FechaOperacion) @Fmt.Hora(l.HoraSalida)</td>
+                    <td>@l.Nombres @l.Apellidos</td><td>@l.CodigoAsiento</td><td class="text-end">@Fmt.Dinero(l.ImporteTramo, c.MonedaCodigo)</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot><tr><th colspan="5" class="text-end">Total</th><th class="text-end">@Fmt.Dinero(c.TotalOperacion, c.MonedaCodigo)</th></tr></tfoot>
+    </table>
+    <p class="small text-muted mb-0">Valores de ejemplo para fines académicos (DP-04, DP-05). Sin impuestos desglosados.</p>
+</article>

@@ -1,0 +1,32 @@
+﻿@model Progra_03.Models.MarcaTarjeta
+@{
+    ViewBag.Title = "Eliminar";
+}
+<h1 class="h3 titulo-pantalla">Eliminar marca de tarjeta</h1>
+<div class="row"><div class="col-lg-7"><div class="panel-vip">
+    <div class="alert alert-warning" role="alert">¿Está seguro de que desea eliminar este registro? Si tiene datos asociados, la base de datos no lo permitirá.</div>
+    <dl class="row mb-3">
+        <dt class="col-sm-5">Código</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Codigo)</dd>
+        <dt class="col-sm-5">Nombre</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Nombre)</dd>
+        <dt class="col-sm-5">Longitud del número</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.LongitudNumero)</dd>
+        <dt class="col-sm-5">Longitud del código de seguridad</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.LongitudCodigoSeguridad)</dd>
+        <dt class="col-sm-5">Prefijos de referencia</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.PrefijosReferencia)</dd>
+        <dt class="col-sm-5">Ruta del logotipo</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.RutaLogo)</dd>
+        <dt class="col-sm-5">Activa</dt>
+        <dd class="col-sm-7">@(Model.Activa ? "Sí" : "No")</dd>
+    </dl>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
+    }
+</div></div></div>

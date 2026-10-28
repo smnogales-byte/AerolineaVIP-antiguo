@@ -53,11 +53,11 @@ namespace Progra_03
             // Configure la lógica de validación de contraseñas
             manager.PasswordValidator = new PasswordValidator
             {
-                RequiredLength = 3,
+                RequiredLength = 8,
                 RequireNonLetterOrDigit = false,
                 RequireDigit = true,
-                RequireLowercase = false,
-                RequireUppercase = false,
+                RequireLowercase = true,
+                RequireUppercase = true,
             };
 
             // Configurar valores predeterminados para bloqueo de usuario

@@ -1,0 +1,53 @@
+﻿@model Progra_03.Models.Frecuencia
+@{
+    ViewBag.Title = "Crear frecuencia";
+}
+<h1 class="h3 titulo-pantalla">Crear frecuencia</h1>
+<p class="subtitulo-pantalla">Frecuencias. Los campos obligatorios se validan en el navegador y en el servidor.</p>
+
+<div class="row">
+<div class="col-lg-7">
+<div class="panel-vip">
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.RutaId, "Ruta (id)", htmlAttributes: new { @class = "form-label" })
+            @Html.DropDownList("RutaId", null, htmlAttributes: new { @class = "form-select" })
+            @Html.ValidationMessageFor(model => model.RutaId, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(model => model.DiaSemana, "Día de la semana (1 = lunes ... 7 = domingo)", htmlAttributes: new { @class = "form-label" })
+            @Html.EditorFor(model => model.DiaSemana, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.DiaSemana, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(model => model.HoraSalida, "Hora de salida (hh:mm:ss)", htmlAttributes: new { @class = "form-label" })
+            @Html.EditorFor(model => model.HoraSalida, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.HoraSalida, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(model => model.HoraLlegada, "Hora de llegada (hh:mm:ss)", htmlAttributes: new { @class = "form-label" })
+            @Html.EditorFor(model => model.HoraLlegada, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.HoraLlegada, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-check mb-3">
+            @Html.EditorFor(model => model.Activa, new { htmlAttributes = new { @class = "form-check-input" } })
+            @Html.LabelFor(model => model.Activa, "Activa", htmlAttributes: new { @class = "form-check-label" })
+            @Html.ValidationMessageFor(model => model.Activa, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-vip">Guardar</button>
+            @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
+}
+</div>
+</div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

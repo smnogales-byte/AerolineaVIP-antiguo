@@ -1,0 +1,43 @@
+﻿@model Progra_03.Models.ModeloAeronave
+@{
+    ViewBag.Title = "Crear modelo de aeronave";
+}
+<h1 class="h3 titulo-pantalla">Crear modelo de aeronave</h1>
+<p class="subtitulo-pantalla">Modelos de aeronave. Los campos obligatorios se validan en el navegador y en el servidor.</p>
+
+<div class="row">
+<div class="col-lg-7">
+<div class="panel-vip">
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Fabricante, "Fabricante", htmlAttributes: new { @class = "form-label" })
+            @Html.EditorFor(model => model.Fabricante, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Fabricante, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Nombre, "Nombre del modelo", htmlAttributes: new { @class = "form-label" })
+            @Html.EditorFor(model => model.Nombre, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(model => model.CapacidadAsientos, "Capacidad de asientos (máximo 7)", htmlAttributes: new { @class = "form-label" })
+            @Html.EditorFor(model => model.CapacidadAsientos, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.CapacidadAsientos, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-vip">Guardar</button>
+            @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
+}
+</div>
+</div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

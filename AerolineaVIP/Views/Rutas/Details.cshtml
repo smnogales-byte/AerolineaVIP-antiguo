@@ -1,0 +1,19 @@
+﻿@model Progra_03.Models.Ruta
+@{
+    ViewBag.Title = "Detalle";
+}
+<h1 class="h3 titulo-pantalla">Detalle de ruta</h1>
+<div class="row"><div class="col-lg-7"><div class="panel-vip">
+    <dl class="row mb-3">
+        <dt class="col-sm-5">Aeropuerto de origen</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.AeropuertoOrigenId)</dd>
+        <dt class="col-sm-5">Aeropuerto de destino</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.AeropuertoDestinoId)</dd>
+        <dt class="col-sm-5">Tarifa referencial (USD, ejemplo)</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.TarifaReferencial)</dd>
+        <dt class="col-sm-5">Activa</dt>
+        <dd class="col-sm-7">@(Model.Activa ? "Sí" : "No")</dd>
+    </dl>
+    @Html.ActionLink("Editar", "Edit", new { id = Model.RutaId }, new { @class = "btn btn-vip" })
+    @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+</div></div></div>

@@ -1,0 +1,56 @@
+﻿@model Progra_03.Models.DisponibilidadVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Disponibilidad de asientos";
+    var v = Model.Vuelo;
+    int libres = Model.Asientos.Count(a => a.EstadoVisual == "DISPONIBLE");
+}
+<h1 class="h3 titulo-pantalla">Disponibilidad de asientos</h1>
+<p class="subtitulo-pantalla">Consulta pública: no reserva ningún asiento. Datos al corte @Fmt.FechaHora(Model.Corte).</p>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="panel-vip">
+            <h2 class="h5">@v.CiudadOrigen → @v.CiudadDestino</h2>
+            <dl class="row mb-0">
+                <dt class="col-5">Vuelo</dt><dd class="col-7">@v.CodigoVuelo</dd>
+                <dt class="col-5">Fecha</dt><dd class="col-7">@Fmt.DiaSemana(Fmt.NumeroDia(v.FechaOperacion)) @Fmt.Fecha(v.FechaOperacion)</dd>
+                <dt class="col-5">Salida / llegada</dt><dd class="col-7">@Fmt.Hora(v.HoraSalida) / @Fmt.Hora(v.HoraLlegada)</dd>
+                <dt class="col-5">Aeronave</dt><dd class="col-7">@(v.Matricula ?? "Sin asignar")</dd>
+                <dt class="col-5">Capacidad máxima</dt><dd class="col-7">@Reglas.CapacidadMaxima asientos</dd>
+                <dt class="col-5">Estado del vuelo</dt><dd class="col-7"><span class="badge @Fmt.ClaseEstado(v.EstadoVueloCodigo)">@Fmt.EstadoVuelo(v.EstadoVueloCodigo)</span></dd>
+            </dl>
+            <hr />
+            <div class="row text-center">
+                <div class="col"><div class="cifra-panel">@libres</div><div class="small text-muted">Disponibles</div></div>
+                <div class="col"><div class="cifra-panel">@Model.Reservados</div><div class="small text-muted">Reservados</div></div>
+                <div class="col"><div class="cifra-panel">@Model.Ocupados</div><div class="small text-muted">Ocupados</div></div>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            @if (VentaVuelo.Comercializable(v) && libres > 0)
+            {
+                <a class="btn btn-vip" href="@Url.Action("SeleccionAsiento", "Reservas", new { id = v.VueloId, pasajeros = 1, tramos = v.VueloId })">Reservar este vuelo</a>
+            }
+            <a class="btn btn-outline-secondary" href="@Url.Action("Buscar", "Vuelos")">Nueva búsqueda</a>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="panel-vip">
+            @if (Model.Mensaje != null)
+            {
+                <div class="alert alert-warning mb-0" role="status">@Model.Mensaje</div>
+            }
+            else
+            {
+                if (libres == 0)
+                {
+                    <div class="alert alert-danger" role="status">No quedan asientos disponibles en este vuelo.</div>
+                }
+                @Html.Partial("_MapaAsientos", new MapaAsientosVM { Asientos = Model.Asientos, Seleccionable = false, Prefijo = "d" })
+                @Html.Partial("_Leyenda")
+                <p class="text-muted small text-center mt-3 mb-0">Proa hacia arriba. El asiento 1I no existe: esa posición es la puerta de acceso.</p>
+            }
+        </div>
+    </div>
+</div>

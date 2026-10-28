@@ -1,0 +1,9 @@
+﻿@{
+    ViewBag.Title = "Acceso denegado";
+}
+<div class="panel-vip text-center">
+    <h2 class="titulo-pantalla text-start">Acceso denegado</h2>
+    <p class="lead mt-3">No tiene permiso para ver esta información.</p>
+    <p class="text-muted">Solo puede consultar y gestionar las operaciones de su propia cuenta.</p>
+    @Html.ActionLink("Volver al inicio", "Index", "Home", null, new { @class = "btn btn-noche" })
+</div>

@@ -1,0 +1,95 @@
+﻿@{
+    ViewBag.Title = "Panel del administrador";
+    bool op = User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Operaciones");
+    bool gest = User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Counter");
+    bool rep = User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Operaciones") || User.IsInRole("Comercial");
+    bool adm = User.IsInRole("SuperUsuario") || User.IsInRole("Administrador");
+    bool super = User.IsInRole("SuperUsuario");
+}
+<h1 class="h3 titulo-pantalla">Panel de administración</h1>
+<p class="subtitulo-pantalla">Accesos a los módulos según su rol. No incluye indicadores ni dashboard en esta entrega.</p>
+
+<div class="row g-3">
+    @if (op)
+    {
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card tarjeta-destino"><div class="franja"></div><div class="card-body">
+                <h2 class="h5">Vuelos e itinerarios</h2>
+                <p class="small text-muted">Genere vuelos desde las frecuencias, asigne aeronaves y revise conflictos.</p>
+                <a class="btn btn-noche" href="@Url.Action("Vuelos", "Admin")">Abrir</a>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card tarjeta-destino"><div class="franja"></div><div class="card-body">
+                <h2 class="h5">Aeronaves y asientos</h2>
+                <p class="small text-muted">Flota, distribución de los siete asientos y asignaciones próximas.</p>
+                <a class="btn btn-noche" href="@Url.Action("Aeronaves", "Admin")">Abrir</a>
+            </div></div>
+        </div>
+    }
+    @if (gest)
+    {
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card tarjeta-destino"><div class="franja"></div><div class="card-body">
+                <h2 class="h5">Usuarios, pasajeros y reservas</h2>
+                <p class="small text-muted">Consulta de cuentas, pasajeros y reservas@(super ? "; asignación de roles." : ".")</p>
+                <a class="btn btn-noche" href="@Url.Action("Gestion", "Admin")">Abrir</a>
+            </div></div>
+        </div>
+    }
+    @if (rep)
+    {
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card tarjeta-destino"><div class="franja"></div><div class="card-body">
+                <h2 class="h5">Consultas y reportes</h2>
+                <p class="small text-muted">Ocupación por vuelo, reservas y compras, con exportación a CSV.</p>
+                <a class="btn btn-noche" href="@Url.Action("Reportes", "Admin")">Abrir</a>
+            </div></div>
+        </div>
+    }
+    @if (adm)
+    {
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card tarjeta-destino"><div class="franja"></div><div class="card-body">
+                <h2 class="h5">Roles de usuarios</h2>
+                <p class="small text-muted">Consulta de los roles asignados a cada cuenta.</p>
+                <a class="btn btn-noche" href="@Url.Action("Index", "Roles")">Abrir</a>
+            </div></div>
+        </div>
+    }
+    @if (op)
+    {
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card tarjeta-destino"><div class="franja"></div><div class="card-body">
+                <h2 class="h5">Datos operativos (CRUD)</h2>
+                <p class="small text-muted">Aeropuertos, rutas, frecuencias, modelos, aeronaves e itinerarios. Borrar es exclusivo del SuperUsuario.</p>
+                <div class="d-flex flex-wrap gap-1">
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Aeropuertos")">Aeropuertos</a>
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Rutas")">Rutas</a>
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Frecuencias")">Frecuencias</a>
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "ModelosAeronave")">Modelos</a>
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Aeronaves")">Aeronaves</a>
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Itinerarios")">Itinerarios</a>
+                </div>
+            </div></div>
+        </div>
+    }
+    @if (super || User.IsInRole("Comercial"))
+    {
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card tarjeta-destino"><div class="franja"></div><div class="card-body">
+                <h2 class="h5">Datos comerciales (CRUD)</h2>
+                <p class="small text-muted">Marcas de tarjeta y métodos de pago de la simulación.</p>
+                <div class="d-flex flex-wrap gap-1">
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "MarcasTarjeta")">Marcas</a>
+                    <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "MetodosPago")">Métodos</a>
+                </div>
+            </div></div>
+        </div>
+    }
+</div>
+
+<div class="panel-vip mt-4">
+    <h2 class="h5">Su sesión</h2>
+    <p class="mb-0">Usuario: <strong>@User.Identity.Name</strong>. Cada acción valida su rol en el servidor aunque conozca la dirección de otra pantalla.</p>
+</div>
