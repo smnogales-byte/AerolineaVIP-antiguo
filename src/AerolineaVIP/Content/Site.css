@@ -63,3 +63,6 @@ input, select, textarea { max-width: 100%; }
     .navbar, footer, .no-imprimir, .btn { display: none !important; }
     .comprobante { border: 0; padding: 0; }
 }
+
+/* Logo de la barra de navegacion */
+.logo-vip { width: 28px; height: 28px; vertical-align: middle; margin-right: 6px; }
