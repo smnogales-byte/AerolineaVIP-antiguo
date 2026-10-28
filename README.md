@@ -1,41 +1,49 @@
-# Aerolínea VIP – Sistema Web Monolítico
+# Aerolínea VIP – Guía para el docente
 
-Sistema web para la compra, reserva y administración de pasajes de una aerolínea VIP.
-Proyecto académico de la asignatura **Desarrollo Web Enfocado en la Integración de Tecnologías** (ESPE, carrera Tecnologías de la Información).
+Sistema web monolítico para la compra, reserva y administración de pasajes de una aerolínea VIP (3 Embraer Phenom 300E, 7 asientos por vuelo). Esta guía explica, paso a paso, cómo ejecutar y revisar el proyecto.
 
-- **Grupo:** 4
-- **Integrante:** Santiago Mauricio Nogales Pañora
-- **Docente:** Juan Fernando Galarraga Hurtado
-- **Flota:** 3 Embraer Phenom 300E (capacidad estricta de 7 asientos por vuelo).
+| Dato | Valor |
+|---|---|
+| Asignatura | Desarrollo Web Enfocado en la Integración de Tecnologías |
+| Institución | Universidad de las Fuerzas Armadas ESPE |
+| Grupo | 4 |
+| Integrante | Santiago Mauricio Nogales Pañora |
+| Docente | Juan Fernando Galarraga Hurtado |
+| Versión | `v1.0-primera-entrega` (28 de octubre de 2026) |
 
-## Tecnologías
+**Tecnologías:** ASP.NET Framework 4.8.1 (MVC 5, Razor), Bootstrap 5.3.8, jQuery, ASP.NET Identity (OWIN), Entity Framework 6 y SQL Server.
 
-- ASP.NET Framework 4.8.1 – MVC 5, Razor
-- Bootstrap 5.3.8 y jQuery (validación en cliente)
-- ASP.NET Identity (OWIN) para autenticación y roles
-- Entity Framework 6 (database first) sobre SQL Server
-
-## Estructura del repositorio
+## 1. Contenido del repositorio
 
 ```
-README.md
-.gitignore
-src/        Solución y proyecto ASP.NET MVC (AerolineaVIP)
-database/   Script SQL unificado (Script_BD_AerolineaVIP_Unificado.sql)
-docs/       Documentación (requerimientos, arquitectura, UX-UI, Gestion, entrega)
+README.md   Esta guía
+src/        Solución (AerolineaVIP.slnx) y proyecto ASP.NET MVC
+database/   Script_BD_AerolineaVIP_Unificado.sql
+docs/       Documentación: PDF de la entrega, UX-UI, Gestion y guía de navegación
 ```
 
-## Cómo ejecutar
+Para ubicar cada archivo del proyecto, ver [docs/Guia_Navegacion_Proyecto.md](docs/Guia_Navegacion_Proyecto.md).
 
-1. Instalar Visual Studio 2022 o superior con la carga de trabajo *ASP.NET y desarrollo web* y SQL Server (Express o LocalDB).
-2. Ejecutar `database/Script_BD_AerolineaVIP_Unificado.sql` en SQL Server para crear la base de datos `AerolineaVIP`. La base de Identity (`AerolineaVIP_Identity`) se crea sola al iniciar.
-3. Abrir `src/AerolineaVIP.slnx` en Visual Studio y restaurar los paquetes NuGet.
-4. Revisar las cadenas de conexión en `src/AerolineaVIP/Web.config` (usan autenticación de Windows) y ajustar el nombre del servidor si es necesario.
-5. Ejecutar con IIS Express (F5).
+## 2. Requisitos
 
-## Usuarios iniciales
+- Windows con Visual Studio 2022 o superior, con la carga de trabajo *ASP.NET y desarrollo web* y el .NET Framework 4.8.1.
+- SQL Server (Express, LocalDB o instancia local) y SQL Server Management Studio.
+- Conexión a internet la primera vez, para restaurar los paquetes NuGet.
 
-Se crean automáticamente al iniciar la aplicación (`Global.asax.cs`). Las claves de prueba están definidas en ese archivo y no se publican aquí.
+## 3. Puesta en marcha
+
+1. **Descargar el proyecto.** Clonar el repositorio o descomprimir `Primera_Entrega_Proyecto_Grupo04.zip`.
+2. **Crear las bases de datos.** Abrir `database/Script_BD_AerolineaVIP_Unificado.sql` en SQL Server Management Studio y ejecutarlo completo. Crea `AerolineaVIP` (negocio) y `AerolineaVIP_Identity` (usuarios y roles).
+3. **Revisar la conexión.** En `src/AerolineaVIP/Web.config`, las cadenas de conexión usan autenticación de Windows con `Data Source=.` y `localhost`. Si el servidor tiene otro nombre, cambiarlo en `DefaultConnection` y `AerolineaVIPEntities`.
+4. **Abrir la solución.** Abrir `src/AerolineaVIP.slnx` en Visual Studio.
+5. **Compilar.** Menú *Compilar > Recompilar solución*. Visual Studio restaura los paquetes NuGet automáticamente; el resultado esperado es 0 errores.
+6. **Ejecutar.** Pulsar F5 (IIS Express). El sitio abre en `https://localhost:44346`.
+
+Al iniciar, `Global.asax.cs` crea por código los 7 roles y los 7 usuarios iniciales, así que no hace falta cargarlos a mano.
+
+## 4. Usuarios iniciales
+
+Se crean al arrancar la aplicación. Las claves de prueba están definidas en `src/AerolineaVIP/Global.asax.cs` (métodos `CrearSuperUsuario`, `CrearAdministrador`, etc.) y no se publican en este documento.
 
 | Rol | Usuario |
 |---|---|
@@ -47,33 +55,33 @@ Se crean automáticamente al iniciar la aplicación (`Global.asax.cs`). Las clav
 | Pasajero | pasajero@aerolineavip.com |
 | Cliente | cliente@aerolineavip.com |
 
-## Funciones por rol
+## 5. Qué revisar (recorrido sugerido)
 
-- **Visitante:** busca vuelos, consulta disponibilidad y asientos sin iniciar sesión.
-- **Pasajero y Cliente:** se registra, reserva, elige asiento, paga (simulado), consulta sus reservas y comprobantes.
-- **Counter:** atiende reservas y check-in de los pasajeros.
-- **Comercial, Operaciones y Administrador:** gestionan catálogos, vuelos, flota y reportes según su rol.
-- **SuperUsuario:** administra roles y usuarios.
+1. **Inicio** (`/`): página principal con logo, nombre y formulario de búsqueda.
+2. **Buscar vuelos** (sin iniciar sesión): origen, destino, fecha y pasajeros; ver resultados y el mapa de 7 asientos. Verde = disponible, morado = reservado, rojo = ocupado.
+3. **Registro e inicio de sesión:** crear una cuenta (el registro público solo asigna el rol Cliente) e iniciar sesión con un usuario inicial.
+4. **Flujo de compra** (Cliente, Pasajero o Counter): elegir asiento, registrar pasajeros, confirmar la reserva, pagar (simulado) y ver el comprobante. Luego revisar *Mis reservas* y *Check-in*.
+5. **Menú por rol:** iniciar sesión con cada usuario y comprobar que el menú *Administración* cambia según el rol.
+6. **CRUD de catálogos** (SuperUsuario o Administrador): Aeropuertos, Rutas, Frecuencias, Modelos de aeronave, Aeronaves, Itinerarios; y, como SuperUsuario o Comercial, Marcas de tarjeta y Métodos de pago. Solo el SuperUsuario puede eliminar.
+7. **Administración:** vuelos y frecuencias, aeronaves y asientos, usuarios y reservas, reportes y asignación de roles.
 
-## Funcionamiento
+## 6. Notas importantes
 
-1. Al iniciar, `Global.asax.cs` crea los roles y los usuarios iniciales.
-2. Cualquier visitante busca vuelos y ve el mapa de 7 asientos (verde disponible, morado reservado, rojo ocupado).
-3. Para reservar se inicia sesión, se elige el asiento, se registran los pasajeros y se confirma la reserva.
-4. El pago es simulado y genera un comprobante. La reserva sin pagar se retiene un tiempo definido en las políticas.
-5. El check-in se habilita antes de la salida, según las políticas de la documentación.
-6. El personal administra vuelos, flota, catálogos, usuarios, roles y reportes según su rol.
+- Los pagos y comprobantes son **simulados**: la tarjeta terminada en `0000` se rechaza a propósito para probar el rechazo.
+- Las políticas de negocio (horas de retención de reserva, ventana de check-in, entre otras) son propuestas del documento de la entrega, pendientes de aprobación, y se pueden ajustar en `Web.config`.
+- No hay contraseñas reales ni credenciales de servicios externos en el repositorio.
 
-Para recorrer el repositorio y el sistema paso a paso, ver [docs/Guia_Navegacion_Proyecto.md](docs/Guia_Navegacion_Proyecto.md).
+## 7. Solución de problemas
 
-## Estado del proyecto
+| Síntoma | Causa y solución |
+|---|---|
+| No se puede abrir la base de datos | No se ejecutó el script SQL, o el nombre del servidor en `Web.config` no coincide. |
+| Error de configuración con `Microsoft.CodeDom.Providers.DotNetCompilerPlatform` | Falta compilar. Hacer *Restaurar paquetes NuGet* y *Recompilar solución*. |
+| El sitio no abre en `localhost:44346` | Ejecutar con F5 desde Visual Studio, con IIS Express como destino. |
+| Los usuarios iniciales no existen | Verificar que la base `AerolineaVIP_Identity` exista; se llenan al arrancar la aplicación. |
 
-- **Versión:** `v1.0-primera-entrega`
-- **Fecha:** 28 de octubre de 2026
-- **Responsable:** Santiago Mauricio Nogales Pañora
+## 8. Documentación
 
-Alcance: wireframes aplicados, flujo de compra y reserva, panel de administración, registro e inicio de sesión por roles. Los pagos y comprobantes son simulados. Las políticas 18.1 (DP-01 a DP-15) están documentadas como propuestas pendientes de aprobación.
-
-## Flujo de trabajo Git
-
-`main` es la rama estable. Cada cambio se desarrolla en una rama `feature/…` y se integra por pull request. No se suben contraseñas ni credenciales reales.
+- `docs/Primera_Entrega_Documentacion_Grupo04.pdf`: portada, wireframes aplicados y políticas DP-01 a DP-15.
+- `docs/UX-UI/` y `docs/Gestion/`: resumen de interfaces y de políticas.
+- `docs/Guia_Navegacion_Proyecto.md`: mapa del repositorio y del sistema.
