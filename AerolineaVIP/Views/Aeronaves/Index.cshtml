@@ -1,0 +1,42 @@
+@model IEnumerable<Progra_03.Controllers.AeronaveFilaVM>
+
+@* HU-006: lista de aeronaves de la flota. Solo rol Administrador (RF-041). *@
+
+@{
+    ViewBag.Title = "Aeronaves";
+}
+
+<h2>Aeronaves</h2>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<p>
+    @Html.ActionLink("Registrar aeronave", "Crear", null, new { @class = "btn btn-primary" })
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Matrícula</th>
+            <th>Modelo</th>
+            <th>Capacidad</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Matricula</td>
+                <td>@item.Modelo</td>
+                <td>@item.Capacidad asientos</td>
+                <td>@item.Estado</td>
+                <td>@Html.ActionLink("Editar", "Editar", new { id = item.AeronaveId })</td>
+            </tr>
+        }
+    </tbody>
+</table>

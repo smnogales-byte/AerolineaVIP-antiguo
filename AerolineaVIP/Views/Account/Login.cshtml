@@ -1,75 +1,54 @@
-﻿@using Progra_03.Models
-@model LoginViewModel
+﻿@model Progra_03.Models.LoginViewModel
 @{
     ViewBag.Title = "Iniciar sesión";
 }
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="panel-vip">
+            <h1 class="h3 titulo-pantalla">Iniciar sesión</h1>
+            <p class="subtitulo-pantalla">Ingrese con su nombre de usuario (o correo) y su contraseña.</p>
 
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <div class="row">
-        <div class="col-md-8">
-            <section id="loginForm">
-                @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
-                {
-                    @Html.AntiForgeryToken()
-                    <h4>Utilice una cuenta local para iniciar sesión.</h4>
-                    <hr />
-                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { id = "formLogin", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
 
+                <div class="mb-3">
+                    @Html.LabelFor(m => m.UserName, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", autocomplete = "username", autofocus = "autofocus" })
+                    @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+                </div>
+                <div class="mb-3">
+                    @Html.LabelFor(m => m.Password, new { @class = "form-label" })
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", autocomplete = "current-password" })
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-check mb-3">
+                    @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input" })
+                    @Html.LabelFor(m => m.RememberMe, new { @class = "form-check-label" })
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-vip btn-lg" id="btnLogin">Ingresar</button>
+                </div>
+            }
 
-                    <div class="row">
-                        @Html.LabelFor(m => m.UserName, new { @class = "col-md-2 col-form-label" })
-                        <div class="col-md-10">
-                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
-                            @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
-                        </div>
-                    </div>
-
-                       @* <div class="row">
-                            @Html.LabelFor(m => m.Email, new { @class = "col-md-2 col-form-label" })
-                            <div class="col-md-10">
-                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
-                                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
-                            </div>
-                        </div>*@
-                        <div class="row">
-                            @Html.LabelFor(m => m.Password, new { @class = "col-md-2 col-form-label" })
-                            <div class="col-md-10">
-                                @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
-                                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="offset-md-2 col-md-10">
-                                <div class="checkbox">
-                                    @Html.CheckBoxFor(m => m.RememberMe)
-                                    @Html.LabelFor(m => m.RememberMe)
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="offset-md-2 col-md-10">
-                                <input type="submit" value="Iniciar sesión" class="btn btn-outline-dark" />
-                            </div>
-                        </div>
-                        <p>
-                            @Html.ActionLink("Registrarse como usuario nuevo", "Register")
-                        </p>
-                        @* Habilite esta opción una vez tenga la confirmación de la cuenta habilitada para la funcionalidad de restablecimiento de contraseña
-                <p>
-                    @Html.ActionLink("¿Ha olvidado su contraseña?", "ForgotPassword")
-                </p>*@
-                        }
-                </section>
-        </div>
-        <div class="col-md-4">
-            <section id="socialLoginForm">
-                @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
-            </section>
+            <hr />
+            <p class="mb-1">@Html.ActionLink("¿Olvidó su contraseña?", "ForgotPassword")</p>
+            <p class="mb-0">¿Aún no tiene cuenta? @Html.ActionLink("Regístrese", "Register", new { ReturnUrl = ViewBag.ReturnUrl })</p>
         </div>
     </div>
-</main>
+</div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        window.addEventListener('load', function () {
+            $('#formLogin').on('submit', function () {
+                if ($(this).valid()) {
+                    // La contraseña nunca se conserva en pantalla; el botón evita envíos repetidos.
+                    $('#btnLogin').prop('disabled', true).text('Verificando…');
+                }
+            });
+        });
+    </script>
 }

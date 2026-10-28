@@ -1,0 +1,96 @@
+﻿@model Progra_03.Models.ConfirmarReservaVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Reserva de pasajes";
+}
+<h1 class="h3 titulo-pantalla">Reserva de pasajes</h1>
+<p class="subtitulo-pantalla">Revise el resumen. Al confirmar, sus asientos quedan <strong>reservados (morado)</strong> pendientes de pago.</p>
+
+<ol class="pasos" aria-label="Pasos de la compra">
+    <li class="hecho">1. Buscar</li><li class="hecho">2. Asientos</li><li class="hecho">3. Pasajeros</li><li class="activo">4. Reserva</li><li>5. Pago</li>
+</ol>
+
+@using (Html.BeginForm("Confirmar", "Reservas", FormMethod.Post, new { id = "formReserva" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="panel-vip">
+                <h2 class="h5">Itinerario</h2>
+                <table class="table table-sm table-vip">
+                    <thead><tr><th>Vuelo</th><th>Ruta</th><th>Fecha</th><th>Salida</th><th>Llegada</th><th class="text-end">Tarifa</th></tr></thead>
+                    <tbody>
+                        @foreach (var t in Model.Tramos)
+                        {
+                            <tr>
+                                <td>@t.CodigoVuelo</td><td>@t.CiudadOrigen → @t.CiudadDestino</td><td>@Fmt.Fecha(t.FechaOperacion)</td>
+                                <td>@Fmt.Hora(t.HoraSalida)</td><td>@Fmt.Hora(t.HoraLlegada)</td><td class="text-end">@Fmt.Dinero(t.TarifaReferencial)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-vip">
+                <h2 class="h5">Pasajeros y asientos</h2>
+                <table class="table table-sm table-vip">
+                    <thead>
+                        <tr><th>Pasajero</th><th>Documento</th>
+                            @for (int t = 0; t < Model.Tramos.Count; t++) { <th>Asiento tramo @(t + 1)</th> }
+                            <th class="text-end">Importe</th></tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Pasajeros.Count; i++)
+                        {
+                            var p = Model.Pasajeros[i];
+                            <tr>
+                                <td>@p.Nombres @p.Apellidos</td>
+                                <td>@p.NumeroDocumento</td>
+                                @for (int t = 0; t < Model.Tramos.Count; t++) { <td>@Model.CodigosAsiento[i][t]</td> }
+                                <td class="text-end">@Fmt.Dinero(Model.ImportePasajero[i])</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="panel-vip">
+                <h2 class="h5">Total</h2>
+                <div class="cifra-panel mb-2">@Fmt.Dinero(Model.Total)</div>
+                <p class="small text-muted">Tarifas de ejemplo (DP-04), sin impuestos ni cargos adicionales definidos.</p>
+                <div class="alert alert-info small" role="status">
+                    La reserva se mantiene <strong>@Model.HorasRetencion horas</strong> (política propuesta, pendiente de aprobación). Pasado ese plazo sin pago, los asientos se liberan.
+                </div>
+                <div class="form-check mb-3">
+                    @Html.CheckBox("aceptaCondiciones", false, new { @class = "form-check-input", id = "aceptaCondiciones" })
+                    <label class="form-check-label" for="aceptaCondiciones">Acepto las condiciones de la reserva *</label>
+                    @Html.ValidationMessage("AceptaCondiciones", "", new { @class = "text-danger d-block" })
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" name="accion" value="pagar" class="btn btn-vip btn-lg" id="btnPagar">Reservar y pagar ahora</button>
+                    <button type="submit" name="accion" value="reservar" class="btn btn-noche">Solo reservar (pagar después)</button>
+                    <a class="btn btn-outline-secondary" href="@Url.Action("Pasajeros", "Reservas")">Regresar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener('load', function () {
+            var enviado = false;
+            $('#formReserva').on('submit', function (e) {
+                if (!$('#aceptaCondiciones').is(':checked')) {
+                    e.preventDefault();
+                    if (!$('#errAcepta').length) { $('#aceptaCondiciones').closest('.form-check').append('<span id="errAcepta" class="text-danger d-block" role="alert">Debe aceptar las condiciones de la reserva.</span>'); }
+                    return;
+                }
+                if (enviado) { e.preventDefault(); return; }   // evita registrar dos veces con un doble clic
+                enviado = true;
+                $(this).find('button[type=submit]').addClass('disabled');
+            });
+        });
+    </script>
+}

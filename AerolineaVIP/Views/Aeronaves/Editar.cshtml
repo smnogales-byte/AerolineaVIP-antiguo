@@ -1,0 +1,35 @@
+@model Progra_03.Controllers.AeronaveFormVM
+
+@* HU-006: editar matrícula y modelo de una aeronave. Solo rol Administrador (RF-041).
+   El estado se muestra pero no se edita aquí: lo cambia Operaciones en HU-024. *@
+
+@{
+    ViewBag.Title = "Editar aeronave";
+}
+
+<h2>Editar aeronave</h2>
+
+@using (Html.BeginForm("Editar", "Aeronaves", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.AeronaveId)
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="mb-3">
+        <label for="Matricula" class="form-label">Matrícula</label>
+        @Html.TextBoxFor(m => m.Matricula, new { @class = "form-control", maxlength = 15 })
+        @Html.ValidationMessageFor(m => m.Matricula, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="mb-3">
+        <label for="ModeloAeronaveId" class="form-label">Modelo</label>
+        @Html.DropDownListFor(m => m.ModeloAeronaveId, (SelectList)ViewBag.Modelos, new { @class = "form-select" })
+        @Html.ValidationMessageFor(m => m.ModeloAeronaveId, "", new { @class = "text-danger" })
+    </div>
+
+    <p>Estado actual: <strong>@Model.Estado</strong></p>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary" })
+}

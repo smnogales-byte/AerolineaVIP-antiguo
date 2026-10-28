@@ -1,0 +1,49 @@
+﻿@model Progra_03.Models.MapaAsientosVM
+@using Progra_03.Models
+@*
+    Cabina de 7 asientos (distribucion propuesta, DP-11): filas 1 a 4, lado izquierdo (I) y derecho (D).
+    El asiento 1I no existe: esa posicion corresponde a la puerta de acceso.
+    Modo seleccionable: los asientos disponibles son botones; los reservados u ocupados no se pueden elegir.
+*@
+@helper Celda(EstadoAsientoRow a, MapaAsientosVM m)
+{
+    string clase = a.EstadoVisual == "DISPONIBLE" ? "disponible" : (a.EstadoVisual == "RESERVADO" ? "reservado" : "ocupado");
+    string texto = a.EstadoVisual == "DISPONIBLE" ? "Disponible" : (a.EstadoVisual == "RESERVADO" ? "Reservado" : "Ocupado");
+    if (m.Seleccionable && a.EstadoVisual == "DISPONIBLE")
+    {
+        <button type="button" class="asiento disponible" data-numero="@a.NumeroAsiento" data-codigo="@a.CodigoAsiento" data-tramo="@m.Prefijo"
+                title="Asiento @a.CodigoAsiento - @a.Ubicacion - @texto" aria-label="Asiento @a.CodigoAsiento, @texto">
+            @a.CodigoAsiento<small>@texto</small>
+        </button>
+    }
+    else
+    {
+        <div class="asiento @clase" title="Asiento @a.CodigoAsiento - @a.Ubicacion - @texto" role="img" aria-label="Asiento @a.CodigoAsiento, @texto">
+            @a.CodigoAsiento<small>@texto</small>
+        </div>
+    }
+}
+<div class="cabina @(Model.Compacto ? "compacta" : "")" data-mapa="@Model.Prefijo">
+    @for (int fila = 1; fila <= 4; fila++)
+    {
+        var izq = Model.Asientos.FirstOrDefault(x => x.Fila == fila && x.Lado == "I");
+        var der = Model.Asientos.FirstOrDefault(x => x.Fila == fila && x.Lado == "D");
+        if (izq != null)
+        {
+            @Celda(izq, Model)
+        }
+        else
+        {
+            <div class="asiento puerta" title="Zona de la puerta de acceso">Puerta</div>
+        }
+        <div class="pasillo"></div>
+        if (der != null)
+        {
+            @Celda(der, Model)
+        }
+        else
+        {
+            <div></div>
+        }
+    }
+</div>

@@ -75,7 +75,14 @@ namespace Progra_03.Controllers
 
             // No cuenta los errores de inicio de sesión para el bloqueo de la cuenta
             // Para permitir que los errores de contraseña desencadenen el bloqueo de la cuenta, cambie a shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
+            // Se acepta el nombre de usuario o el correo electronico.
+            string nombreUsuario = model.UserName;
+            if (nombreUsuario != null && nombreUsuario.Contains("@"))
+            {
+                var porCorreo = await UserManager.FindByEmailAsync(nombreUsuario.Trim());
+                if (porCorreo != null) nombreUsuario = porCorreo.UserName;
+            }
+            var result = await SignInManager.PasswordSignInAsync(nombreUsuario, model.Password, model.RememberMe, shouldLockout: false);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -86,7 +93,7 @@ namespace Progra_03.Controllers
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
                 case SignInStatus.Failure:
                 default:
-                    ModelState.AddModelError("", "Intento de inicio de sesión no válido.");
+                    ModelState.AddModelError("", "Usuario o contraseña incorrectos.");
                     return View(model);
             }
         }
@@ -136,48 +143,87 @@ namespace Progra_03.Controllers
 
         //
         // GET: /Account/Register
+        // CAMBIO PRIMERA ENTREGA: el desplegable de rol depende de quien abre la pantalla.
+        // Visitante: solo "Cliente" (bloqueado). SuperUsuario: todos los roles existentes.
         [AllowAnonymous]
         public ActionResult Register()
         {
-            return View();
+            CargarRolesRegistro(RolPublico);
+            return View(new RegisterViewModel { Rol = RolPublico });
         }
 
         //
         // POST: /Account/Register
+        // CAMBIO PRIMERA ENTREGA (seguridad del registro): la creacion publica de cuentas nunca
+        // puede producir un Administrador o SuperUsuario. El rol enviado por el navegador se IGNORA
+        // si quien registra no es SuperUsuario; el servidor decide el rol.
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            bool esSuperUsuario = User.Identity.IsAuthenticated && User.IsInRole(RolSuperUsuario);
+
+            if (!esSuperUsuario)
+            {
+                // Visitante: rol forzado en el servidor.
+                ModelState.Remove("Rol");
+                model.Rol = RolPublico;
+            }
+            else
+            {
+                // SuperUsuario: solo roles que existen en la base de Identity.
+                var rolesValidos = ObtenerRolesExistentes();
+                if (string.IsNullOrWhiteSpace(model.Rol) || !rolesValidos.Contains(model.Rol))
+                {
+                    ModelState.AddModelError("Rol", "Seleccione un rol permitido.");
+                }
+            }
+
+            if (!model.AceptaCondiciones)
+            {
+                ModelState.AddModelError("AceptaCondiciones", "Debe aceptar el aviso de privacidad y las condiciones.");
+            }
+
             if (ModelState.IsValid)
             {
-
-                // var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var user = new ApplicationUser { UserName = model.UserName, Email = model.Email };
 
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    // CAMBIO HU-001 (única modificación de este archivo): todo usuario que se registra
-                    // queda con el rol Cliente (perfil Cliente, 9.8 y matriz 16.1).
-                    // El rol "Cliente" ya existe porque lo crea Global.asax.cs al arrancar la aplicación.
-                    // Va antes del SignInAsync para que el rol ya viaje en la sesión de ese primer inicio.
-                    await UserManager.AddToRoleAsync(user.Id, "Cliente");
-
-                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-
-                    // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771
-                    // Enviar un correo electrónico con este vínculo
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirmar la cuenta", "Para confirmar su cuenta, haga clic <a href=\"" + callbackUrl + "\">aquí</a>");
-
-                    return RedirectToAction("Index", "Home");
+                    // Nombres y apellidos se guardan como claims de Identity (sin cambiar el esquema de la base).
+                    await UserManager.AddClaimAsync(user.Id, new Claim(ClaimTypes.GivenName, model.Nombres.Trim()));
+                    await UserManager.AddClaimAsync(user.Id, new Claim(ClaimTypes.Surname, model.Apellidos.Trim()));
+                    var rolResult = await UserManager.AddToRoleAsync(user.Id, model.Rol);
+                    if (!rolResult.Succeeded)
+                    {
+                        // No dejar una cuenta sin rol.
+                        await UserManager.DeleteAsync(user);
+                        AddErrors(rolResult);
+                    }
+                    else if (esSuperUsuario)
+                    {
+                        // El SuperUsuario sigue con su propia sesion; no se inicia sesion con la cuenta nueva.
+                        TempData["Mensaje"] = "Cuenta " + model.UserName + " creada con el rol " + model.Rol + ".";
+                        return RedirectToAction("Index", "Roles");
+                    }
+                    else
+                    {
+                        await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+                        return RedirectToAction("Index", "Home");
+                    }
                 }
-                AddErrors(result);
+                else
+                {
+                    AddErrors(result);
+                }
             }
 
             // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
+            model.Password = null;
+            model.ConfirmPassword = null;
+            CargarRolesRegistro(model.Rol);
             return View(model);
         }
 
@@ -211,19 +257,15 @@ namespace Progra_03.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await UserManager.FindByNameAsync(model.Email);
-                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
+                // CAMBIO PRIMERA ENTREGA (pantalla 4): siempre el mismo mensaje neutral, exista o no la cuenta.
+                // El envio real del enlace queda como simulacion academica (no hay servicio de correo).
+                var user = await UserManager.FindByNameAsync(model.Email) ?? await UserManager.FindByEmailAsync(model.Email);
+                if (user != null)
                 {
-                    // No revelar que el usuario no existe o que no está confirmado
-                    return View("ForgotPasswordConfirmation");
+                    // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                    // Aqui iria el envio del enlace de recuperacion cuando exista un servicio de correo.
                 }
-
-                // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771
-                // Enviar un correo electrónico con este vínculo
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Restablecer contraseña", "Para restablecer la contraseña, haga clic <a href=\"" + callbackUrl + "\">aquí</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                return View("ForgotPasswordConfirmation");
             }
 
             // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
@@ -449,6 +491,31 @@ namespace Progra_03.Controllers
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error);
+            }
+        }
+
+        // CAMBIO PRIMERA ENTREGA: nombres de rol usados por el registro.
+        private const string RolPublico = "Cliente";
+        private const string RolSuperUsuario = "SuperUsuario";
+
+        // Roles que existen en AerolineaVIP_Identity (los crea InicializadorIdentity al arrancar).
+        private static System.Collections.Generic.List<string> ObtenerRolesExistentes()
+        {
+            using (var ctx = new ApplicationDbContext())
+            {
+                return ctx.Roles.Select(r => r.Name).OrderBy(n => n).ToList();
+            }
+        }
+
+        // Prepara lo que necesita la vista Register: si es SuperUsuario y la lista de roles.
+        private void CargarRolesRegistro(string seleccionado)
+        {
+            bool esSuperUsuario = User.Identity.IsAuthenticated && User.IsInRole(RolSuperUsuario);
+            ViewBag.EsSuperUsuario = esSuperUsuario;
+            ViewBag.RolPublico = RolPublico;
+            if (esSuperUsuario)
+            {
+                ViewBag.Roles = new SelectList(ObtenerRolesExistentes(), seleccionado);
             }
         }
 

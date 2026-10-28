@@ -1,0 +1,90 @@
+﻿@model Progra_03.Models.AdminAeronavesVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Aeronaves y asientos";
+    bool puedeCambiar = User.IsInRole("SuperUsuario") || User.IsInRole("Administrador");
+}
+<h1 class="h3 titulo-pantalla">Administración de aeronaves</h1>
+<p class="subtitulo-pantalla">Flota, distribución de asientos (máximo @Reglas.CapacidadMaxima por aeronave) y asignaciones próximas. Las asignaciones de ejemplo no son definitivas (DP-02).</p>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="panel-vip table-responsive">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="h5 mb-0">Flota</h2>
+                @if (puedeCambiar) { <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Aeronaves")">Registrar / editar (CRUD)</a> }
+            </div>
+            <table class="table table-sm table-vip table-hover">
+                <thead><tr><th>Matrícula</th><th>Modelo</th><th>Asientos</th><th>Estado</th><th>Vuelos próximos</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var f in Model.Flota)
+                    {
+                        <tr class="@(Model.SeleccionadaId == f.Aeronave.AeronaveId ? "table-active" : "")">
+                            <td><a href="@Url.Action("Aeronaves", new { id = f.Aeronave.AeronaveId })">@f.Aeronave.Matricula</a></td>
+                            <td>@f.Modelo</td>
+                            <td>@f.Capacidad</td>
+                            <td><span class="badge @Fmt.ClaseEstado(f.Aeronave.EstadoAeronaveCodigo)">@Fmt.EstadoAeronave(f.Aeronave.EstadoAeronaveCodigo)</span></td>
+                            <td>@f.VuelosProximos</td>
+                            <td>
+                                @if (puedeCambiar)
+                                {
+                                    using (Html.BeginForm("CambiarEstadoAeronave", "Admin", new { id = f.Aeronave.AeronaveId }, FormMethod.Post, new { @class = "d-inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">@(f.Aeronave.EstadoAeronaveCodigo == "DISPONIBLE" ? "Marcar no disponible" : "Marcar disponible")</button>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="panel-vip">
+            <h2 class="h5">Distribución de asientos @Model.SeleccionadaMatricula</h2>
+            @if (Model.Distribucion.Count > 0)
+            {
+                @Html.Partial("_MapaAsientos", new MapaAsientosVM { Asientos = Model.Distribucion, Seleccionable = false, Prefijo = "a" })
+                <table class="table table-sm mt-3">
+                    <thead><tr><th>N.º</th><th>Código</th><th>Fila</th><th>Lado</th><th>Ubicación</th></tr></thead>
+                    <tbody>
+                        @foreach (var a in Model.Distribucion)
+                        {
+                            <tr><td>@a.NumeroAsiento</td><td>@a.CodigoAsiento</td><td>@a.Fila</td><td>@(a.Lado == "D" ? "Derecho" : "Izquierdo")</td><td>@a.Ubicacion</td></tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="small text-muted mb-0">Nomenclatura propuesta (DP-11), pendiente de confirmación. No existe el asiento 1I (puerta).</p>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Seleccione una aeronave.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="panel-vip table-responsive">
+    <h2 class="h5">Asignaciones próximas @Model.SeleccionadaMatricula</h2>
+    @if (Model.Asignaciones.Count == 0)
+    {
+        <p class="text-muted mb-0">Esta aeronave no tiene vuelos próximos asignados.</p>
+    }
+    else
+    {
+        <table class="table table-sm table-vip">
+            <thead><tr><th>Vuelo</th><th>Fecha</th><th>Ruta</th><th>Horario</th><th>Ocupación</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var v in Model.Asignaciones)
+                {
+                    <tr><td>@v.CodigoVuelo</td><td>@Fmt.Fecha(v.FechaOperacion)</td><td>@v.CiudadOrigen → @v.CiudadDestino</td>
+                        <td>@Fmt.Hora(v.HoraSalida) - @Fmt.Hora(v.HoraLlegada)</td><td>@v.Ocupados / @v.Capacidad</td>
+                        <td><span class="badge @Fmt.ClaseEstado(v.EstadoVueloCodigo)">@Fmt.EstadoVuelo(v.EstadoVueloCodigo)</span></td>
+                        <td><a class="btn btn-sm btn-outline-dark" href="@Url.Action("EditarVuelo", new { id = v.VueloId })">Reasignar</a></td></tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

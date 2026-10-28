@@ -1,0 +1,25 @@
+﻿@model Progra_03.Models.MarcaTarjeta
+@{
+    ViewBag.Title = "Detalle";
+}
+<h1 class="h3 titulo-pantalla">Detalle de marca de tarjeta</h1>
+<div class="row"><div class="col-lg-7"><div class="panel-vip">
+    <dl class="row mb-3">
+        <dt class="col-sm-5">Código</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Codigo)</dd>
+        <dt class="col-sm-5">Nombre</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Nombre)</dd>
+        <dt class="col-sm-5">Longitud del número</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.LongitudNumero)</dd>
+        <dt class="col-sm-5">Longitud del código de seguridad</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.LongitudCodigoSeguridad)</dd>
+        <dt class="col-sm-5">Prefijos de referencia</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.PrefijosReferencia)</dd>
+        <dt class="col-sm-5">Ruta del logotipo</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.RutaLogo)</dd>
+        <dt class="col-sm-5">Activa</dt>
+        <dd class="col-sm-7">@(Model.Activa ? "Sí" : "No")</dd>
+    </dl>
+    @Html.ActionLink("Editar", "Edit", new { id = Model.Codigo }, new { @class = "btn btn-vip" })
+    @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+</div></div></div>

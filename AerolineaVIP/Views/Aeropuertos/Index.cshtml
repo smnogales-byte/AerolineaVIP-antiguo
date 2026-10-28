@@ -1,0 +1,42 @@
+﻿@model IEnumerable<Progra_03.Models.Aeropuerto>
+@{
+    ViewBag.Title = "Aeropuertos";
+}
+<h1 class="h3 titulo-pantalla">Aeropuertos</h1>
+<p class="subtitulo-pantalla">Administración de datos mediante CRUD.</p>
+
+<p>
+    @Html.ActionLink("Crear nuevo registro", "Create", null, new { @class = "btn btn-vip" })
+    @Html.ActionLink("Volver al panel", "Index", "Admin", null, new { @class = "btn btn-outline-secondary" })
+</p>
+
+<div class="panel-vip table-responsive">
+    <table class="table table-sm table-vip table-hover mb-0">
+        <thead>
+            <tr>
+                <th>Código IATA</th>
+                <th>Nombre</th>
+                <th>Localidad</th>
+                <th>Activo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+@foreach (var item in Model) {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.CodigoIATA)</td>
+                <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+                <td>@Html.DisplayFor(modelItem => item.Localidad)</td>
+                <td>@(item.Activo ? "Sí" : "No")</td>
+                <td class="text-nowrap">
+                    @Html.ActionLink("Editar", "Edit", new { id = item.AeropuertoId }, new { @class = "btn btn-sm btn-outline-dark" })
+                    @Html.ActionLink("Detalle", "Details", new { id = item.AeropuertoId }, new { @class = "btn btn-sm btn-outline-secondary" })
+                    @if (User.IsInRole("SuperUsuario")) {
+                        @Html.ActionLink("Eliminar", "Delete", new { id = item.AeropuertoId }, new { @class = "btn btn-sm btn-outline-danger" })
+                    }
+                </td>
+            </tr>
+}
+        </tbody>
+    </table>
+</div>

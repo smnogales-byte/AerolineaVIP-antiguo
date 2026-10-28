@@ -1,0 +1,44 @@
+﻿@model IEnumerable<Progra_03.Models.MarcaTarjeta>
+@{
+    ViewBag.Title = "Marcas de tarjeta";
+}
+<h1 class="h3 titulo-pantalla">Marcas de tarjeta</h1>
+<p class="subtitulo-pantalla">Administración de datos mediante CRUD.</p>
+
+<p>
+    @Html.ActionLink("Crear nuevo registro", "Create", null, new { @class = "btn btn-vip" })
+    @Html.ActionLink("Volver al panel", "Index", "Admin", null, new { @class = "btn btn-outline-secondary" })
+</p>
+
+<div class="panel-vip table-responsive">
+    <table class="table table-sm table-vip table-hover mb-0">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Dígitos</th>
+                <th>Dígitos CVV</th>
+                <th>Activa</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+@foreach (var item in Model) {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Codigo)</td>
+                <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+                <td>@Html.DisplayFor(modelItem => item.LongitudNumero)</td>
+                <td>@Html.DisplayFor(modelItem => item.LongitudCodigoSeguridad)</td>
+                <td>@(item.Activa ? "Sí" : "No")</td>
+                <td class="text-nowrap">
+                    @Html.ActionLink("Editar", "Edit", new { id = item.Codigo }, new { @class = "btn btn-sm btn-outline-dark" })
+                    @Html.ActionLink("Detalle", "Details", new { id = item.Codigo }, new { @class = "btn btn-sm btn-outline-secondary" })
+                    @if (User.IsInRole("SuperUsuario")) {
+                        @Html.ActionLink("Eliminar", "Delete", new { id = item.Codigo }, new { @class = "btn btn-sm btn-outline-danger" })
+                    }
+                </td>
+            </tr>
+}
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,86 @@
+﻿@model Progra_03.Models.ResultadosVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Resultados de búsqueda";
+    var b = Model.Busqueda;
+}
+<h1 class="h3 titulo-pantalla">Resultados de búsqueda</h1>
+<p class="subtitulo-pantalla">
+    @Model.OrigenCiudad → @Model.DestinoCiudad &middot; @(b.Fecha.HasValue ? Fmt.DiaSemana(Fmt.NumeroDia(b.Fecha.Value)) + " " + Fmt.Fecha(b.Fecha.Value) : "")
+    &middot; @b.Pasajeros pasajero(s) &middot; Horario: @b.Horario
+</p>
+
+<ol class="pasos" aria-label="Pasos de la compra">
+    <li class="hecho">1. Buscar</li><li class="activo">2. Elegir vuelo</li><li>3. Asientos</li><li>4. Pasajeros</li><li>5. Reserva</li>
+</ol>
+
+<details class="panel-vip">
+    <summary class="fw-semibold">Modificar la búsqueda</summary>
+    <div class="mt-3">@Html.Partial("_FormularioBusqueda", b)</div>
+</details>
+
+@if (Model.Aviso != null)
+{
+    <div class="alert alert-info" role="status">@Model.Aviso</div>
+}
+
+@foreach (var t in Model.Tarjetas)
+{
+    var primero = t.Tramos[0];
+    var ultimo = t.Tramos[t.Tramos.Count - 1];
+    <div class="panel-vip tarjeta-vuelo @(t.Seleccionable ? "" : "no-disponible")">
+        <div class="row g-3 align-items-center">
+            <div class="col-12 col-lg-8">
+                @if (t.EsItinerario)
+                {
+                    <div class="mb-2"><span class="badge text-bg-dark">Itinerario</span> <strong>@t.Nombre</strong></div>
+                }
+                @foreach (var tr in t.Tramos)
+                {
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="text-center">
+                            <div class="hora-grande">@Fmt.Hora(tr.HoraSalida)</div>
+                            <div class="small text-muted">@tr.CiudadOrigen (@tr.Origen)</div>
+                        </div>
+                        <div class="linea-ruta"></div>
+                        <div class="text-center">
+                            <div class="hora-grande">@Fmt.Hora(tr.HoraLlegada)</div>
+                            <div class="small text-muted">@tr.CiudadDestino (@tr.Destino)</div>
+                        </div>
+                        <div class="ms-3 small">
+                            <div><strong>@tr.CodigoVuelo</strong></div>
+                            <div class="text-muted">@(tr.Matricula ?? "Aeronave sin asignar") &middot; @Fmt.Fecha(tr.FechaOperacion)</div>
+                            <div><span class="badge @Fmt.ClaseEstado(tr.EstadoVueloCodigo) estado-etiqueta">@Fmt.EstadoVuelo(tr.EstadoVueloCodigo)</span>
+                                 <a href="@Url.Action("Disponibilidad", "Vuelos", new { id = tr.VueloId })">Ver asientos</a></div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="col-12 col-lg-4 text-lg-end">
+                <div class="mb-1"><strong>@Fmt.Dinero(t.Tramos.Sum(x => x.TarifaReferencial))</strong> <span class="text-muted small">por pasajero (tarifa referencial)</span></div>
+                <div class="mb-2">
+                    <span class="badge @(t.Disponibles >= b.Pasajeros ? "text-bg-success" : "text-bg-danger")">
+                        @(t.Disponibles > 0 ? t.Disponibles + " asiento(s) disponible(s)" : "Sin asientos disponibles")
+                    </span>
+                </div>
+                @if (t.Seleccionable)
+                {
+                    <a class="btn btn-vip" href="@Url.Action("SeleccionAsiento", "Reservas", new { id = primero.VueloId, pasajeros = b.Pasajeros, tramos = t.TramosCsv })">Seleccionar</a>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-secondary" disabled="disabled">No disponible</button>
+                    <div class="small text-muted mt-1">@t.Motivo</div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.Tarjetas.Count == 0)
+{
+    <div class="panel-vip text-center">
+        <p class="mb-2">No hay vuelos para los criterios indicados.</p>
+        @Html.ActionLink("Probar otra búsqueda", "Buscar", "Vuelos", new { origenId = b.OrigenId }, new { @class = "btn btn-noche" })
+    </div>
+}

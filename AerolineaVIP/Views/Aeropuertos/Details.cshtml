@@ -1,0 +1,19 @@
+﻿@model Progra_03.Models.Aeropuerto
+@{
+    ViewBag.Title = "Detalle";
+}
+<h1 class="h3 titulo-pantalla">Detalle de aeropuerto</h1>
+<div class="row"><div class="col-lg-7"><div class="panel-vip">
+    <dl class="row mb-3">
+        <dt class="col-sm-5">Código IATA</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.CodigoIATA)</dd>
+        <dt class="col-sm-5">Nombre</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Nombre)</dd>
+        <dt class="col-sm-5">Ciudad / localidad</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Localidad)</dd>
+        <dt class="col-sm-5">Activo</dt>
+        <dd class="col-sm-7">@(Model.Activo ? "Sí" : "No")</dd>
+    </dl>
+    @Html.ActionLink("Editar", "Edit", new { id = Model.AeropuertoId }, new { @class = "btn btn-vip" })
+    @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+</div></div></div>

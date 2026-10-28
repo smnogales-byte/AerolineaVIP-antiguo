@@ -1,0 +1,36 @@
+﻿@model Progra_03.Models.EditarVueloVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Editar vuelo";
+}
+<h1 class="h3 titulo-pantalla">Editar vuelo @Model.CodigoVuelo</h1>
+<p class="subtitulo-pantalla">@Model.Ruta · @Fmt.Fecha(Model.Fecha) · @Model.Horario</p>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="panel-vip">
+            @using (Html.BeginForm("EditarVuelo", "Admin", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.VueloId)
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
+                <div class="mb-3">
+                    @Html.LabelFor(m => m.AeronaveId, new { @class = "form-label" })
+                    @Html.DropDownListFor(m => m.AeronaveId, Model.Aeronaves, "Sin aeronave (el vuelo no se comercializa)", new { @class = "form-select" })
+                    @Html.ValidationMessageFor(m => m.AeronaveId, "", new { @class = "text-danger" })
+                    <div class="form-text">La base de datos rechaza aeronaves con horarios superpuestos o cambios que afecten reservas existentes.</div>
+                </div>
+                <div class="mb-3">
+                    @Html.LabelFor(m => m.EstadoVueloCodigo, new { @class = "form-label" })
+                    @Html.DropDownListFor(m => m.EstadoVueloCodigo, Model.Estados, new { @class = "form-select" })
+                    @Html.ValidationMessageFor(m => m.EstadoVueloCodigo, "", new { @class = "text-danger" })
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-vip">Guardar cambios</button>
+                    <a class="btn btn-outline-secondary" href="@Url.Action("Vuelos")">Cancelar</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts { @Scripts.Render("~/bundles/jqueryval") }

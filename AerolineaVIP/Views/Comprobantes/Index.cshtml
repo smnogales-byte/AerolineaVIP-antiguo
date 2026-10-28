@@ -1,0 +1,79 @@
+﻿@model Progra_03.Models.ComprobantesVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Comprobantes";
+}
+<h1 class="h3 titulo-pantalla">Comprobantes</h1>
+<p class="subtitulo-pantalla">Comprobantes <strong>académicos</strong> generados por la simulación. No son facturas ni tienen validez tributaria.</p>
+
+<div class="panel-vip">
+    @using (Html.BeginForm("Index", "Comprobantes", FormMethod.Get))
+    {
+        <div class="row g-3 align-items-end">
+            <div class="col-6 col-md-3"><label for="desde" class="form-label">Emitido desde</label>
+                <input type="date" id="desde" name="desde" class="form-control" value="@(Model.Desde.HasValue ? Model.Desde.Value.ToString("yyyy-MM-dd") : "")" /></div>
+            <div class="col-6 col-md-3"><label for="hasta" class="form-label">Emitido hasta</label>
+                <input type="date" id="hasta" name="hasta" class="form-control" value="@(Model.Hasta.HasValue ? Model.Hasta.Value.ToString("yyyy-MM-dd") : "")" /></div>
+            <div class="col-12 col-md-3"><label for="tipo" class="form-label">Tipo</label>
+                <select id="tipo" name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="CONFIRMACION" @(Model.Tipo == "CONFIRMACION" ? "selected" : "")>Confirmación</option>
+                    <option value="FACTURA" @(Model.Tipo == "FACTURA" ? "selected" : "")>Comprobante de venta académico</option>
+                </select></div>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-noche">Filtrar</button>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.Comprobantes.Count == 0)
+{
+    <div class="panel-vip text-center">Aún no hay comprobantes. Se generan al completar un pago aprobado.</div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="panel-vip table-responsive">
+                <table class="table table-vip table-sm table-hover mb-0">
+                    <thead><tr><th>Número</th><th>Tipo</th><th>Emitido</th></tr></thead>
+                    <tbody>
+                        @foreach (var c in Model.Comprobantes)
+                        {
+                            <tr class="@(Model.Seleccionado != null && Model.Seleccionado.ComprobanteId == c.ComprobanteId ? "table-active" : "")">
+                                <td><a href="@Url.Action("Index", new { id = c.ComprobanteId, desde = Model.Desde, hasta = Model.Hasta, tipo = Model.Tipo })">@c.NumeroComprobante</a></td>
+                                <td>@Fmt.TipoComprobante(c.TipoComprobanteCodigo)</td>
+                                <td>@Fmt.FechaHora(c.FechaEmision)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            @if (Model.Seleccionado != null)
+            {
+                var c = Model.Seleccionado;
+                <div class="panel-vip">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 class="h5 mb-0">@Fmt.TipoComprobante(c.TipoComprobanteCodigo) @c.NumeroComprobante</h2>
+                            <div class="small text-muted">Reserva @c.CodigoReserva · @Fmt.FechaHora(c.FechaEmision)</div>
+                        </div>
+                        <span class="badge @Fmt.ClaseEstado(c.EstadoComprobanteCodigo)">@c.EstadoComprobanteCodigo</span>
+                    </div>
+                    <hr />
+                    <dl class="row small">
+                        <dt class="col-4">Emisor</dt><dd class="col-8">@c.EmisorNombre</dd>
+                        <dt class="col-4">Total</dt><dd class="col-8"><strong>@Fmt.Dinero(c.TotalOperacion, c.MonedaCodigo)</strong></dd>
+                        <dt class="col-4">Pago</dt><dd class="col-8">@(c.MetodoPago ?? "—") @(c.MarcaTarjeta) @(c.TarjetaEnmascarada) · @(c.CodigoOperacion ?? "")</dd>
+                    </dl>
+                    <p class="small text-danger mb-3">@c.LeyendaComprobante</p>
+                    <a class="btn btn-vip" href="@Url.Action("Ver", new { id = c.ComprobanteId })" target="_blank" rel="noopener">Ver e imprimir / guardar como PDF</a>
+                </div>
+            }
+        </div>
+    </div>
+}
