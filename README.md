@@ -55,6 +55,17 @@ Se crean automáticamente al iniciar la aplicación (`Global.asax.cs`). Las clav
 - **Comercial, Operaciones y Administrador:** gestionan catálogos, vuelos, flota y reportes según su rol.
 - **SuperUsuario:** administra roles y usuarios.
 
+## Funcionamiento
+
+1. Al iniciar, `Global.asax.cs` crea los roles y los usuarios iniciales.
+2. Cualquier visitante busca vuelos y ve el mapa de 7 asientos (verde disponible, morado reservado, rojo ocupado).
+3. Para reservar se inicia sesión, se elige el asiento, se registran los pasajeros y se confirma la reserva.
+4. El pago es simulado y genera un comprobante. La reserva sin pagar se retiene un tiempo definido en las políticas.
+5. El check-in se habilita antes de la salida, según las políticas de la documentación.
+6. El personal administra vuelos, flota, catálogos, usuarios, roles y reportes según su rol.
+
+Para recorrer el repositorio y el sistema paso a paso, ver [docs/Guia_Navegacion_Proyecto.md](docs/Guia_Navegacion_Proyecto.md).
+
 ## Estado del proyecto
 
 - **Versión:** `v1.0-primera-entrega`
