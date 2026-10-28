@@ -333,7 +333,7 @@ namespace Progra_03.Controllers
         private void CargarCombosVuelos(AdminVuelosVM vm)
         {
             var rutas = db.Database.SqlQuery<RutaCombo>(
-                "SELECT r.RutaId, ao.Localidad + ' → ' + ad.Localidad AS Texto FROM dbo.Ruta r " +
+                "SELECT r.RutaId, ao.Localidad + N' → ' + ad.Localidad AS Texto FROM dbo.Ruta r " +
                 "JOIN dbo.Aeropuerto ao ON ao.AeropuertoId = r.AeropuertoOrigenId " +
                 "JOIN dbo.Aeropuerto ad ON ad.AeropuertoId = r.AeropuertoDestinoId ORDER BY Texto").ToList();
             vm.Rutas = new SelectList(rutas, "RutaId", "Texto", vm.RutaId);
@@ -343,7 +343,7 @@ namespace Progra_03.Controllers
         private void CargarCombosReporte(ReportesVM vm)
         {
             var rutas = db.Database.SqlQuery<RutaCombo>(
-                "SELECT r.RutaId, ao.Localidad + ' → ' + ad.Localidad AS Texto FROM dbo.Ruta r " +
+                "SELECT r.RutaId, ao.Localidad + N' → ' + ad.Localidad AS Texto FROM dbo.Ruta r " +
                 "JOIN dbo.Aeropuerto ao ON ao.AeropuertoId = r.AeropuertoOrigenId " +
                 "JOIN dbo.Aeropuerto ad ON ad.AeropuertoId = r.AeropuertoDestinoId ORDER BY Texto").ToList();
             vm.Rutas = new SelectList(rutas, "RutaId", "Texto", vm.RutaId);
