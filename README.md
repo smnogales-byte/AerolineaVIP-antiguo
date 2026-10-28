@@ -33,11 +33,19 @@ Para ubicar cada archivo del proyecto, ver [docs/Guia_Navegacion_Proyecto.md](do
 ## 3. Puesta en marcha
 
 1. **Descargar el proyecto.** Clonar el repositorio o descomprimir `Primera_Entrega_Proyecto_Grupo04.zip`.
-2. **Crear las bases de datos.** Abrir `database/Script_BD_AerolineaVIP_Unificado.sql` en SQL Server Management Studio y ejecutarlo completo. Crea `AerolineaVIP` (negocio) y `AerolineaVIP_Identity` (usuarios y roles).
+2. **Crear las bases de datos.** Ver el detalle en la sección 3.1.
 3. **Revisar la conexión.** En `src/AerolineaVIP/Web.config`, las cadenas de conexión usan autenticación de Windows con `Data Source=.` y `localhost`. Si el servidor tiene otro nombre, cambiarlo en `DefaultConnection` y `AerolineaVIPEntities`.
 4. **Abrir la solución.** Ver el detalle en la sección 3.2.
 5. **Compilar.** Menú *Compilar > Recompilar solución*. Visual Studio restaura los paquetes NuGet automáticamente; el resultado esperado es 0 errores.
 6. **Ejecutar.** Pulsar F5 (IIS Express). El sitio abre en `https://localhost:44346`.
+
+### 3.1 Dónde y cómo ejecutar el script SQL
+
+1. Abrir **SQL Server Management Studio (SSMS)**.
+2. En la ventana *Conectar con el servidor*, elegir tipo *Motor de base de datos*, nombre del servidor `.` (o `localhost`) y autenticación **Autenticación de Windows**; pulsar **Conectar**.
+3. Menú *Archivo > Abrir > Archivo* y seleccionar `database/Script_BD_AerolineaVIP_Unificado.sql` del repositorio.
+4. Pulsar **Ejecutar** (o F5) y esperar a que termine sin errores.
+5. En el **Explorador de objetos**, clic derecho sobre *Bases de datos > Actualizar*. Deben aparecer **AerolineaVIP** y **AerolineaVIP_Identity**.
 
 ### 3.2 Dónde y cómo abrir el proyecto en Visual Studio
 
