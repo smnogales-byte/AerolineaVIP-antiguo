@@ -7,3 +7,17 @@ packages/
 *.suo
 *.userosscache
 *.sln.docstates
+
+## Adicionales
+*.cache
+*.log
+[Dd]ebug/
+[Rr]elease/
+App_Data/*.mdf
+App_Data/*.ldf
+Entregable/
+_respaldo_antes_primera_entrega/
+_paquete_entrega1.zip
+.git/stale-*
+zi0jk8mJ
+AerolineaVIP/AeronavesController.cs
