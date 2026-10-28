@@ -48,62 +48,45 @@ namespace Progra_03.Models
 
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Ingrese su usuario o correo.")]
-        [Display(Name = "Usuario o correo electrónico")]
+        [Required]
+        [Display(Name = "Nombre de usuario")]
         public string UserName { get; set; }
 
-        [Required(ErrorMessage = "Ingrese su contraseña.")]
+        /*[Required]
+        [Display(Name = "Correo electrónico")]
+        [EmailAddress]
+        public string Email { get; set; }*/
+
+        [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]
         public string Password { get; set; }
 
-        [Display(Name = "Mantener la sesión iniciada")]
+        [Display(Name = "¿Recordar cuenta?")]
         public bool RememberMe { get; set; }
     }
 
-    // PRIMERA ENTREGA (punto 6): usuario, correo, contraseña y rol. Todas las validaciones se repiten en el servidor.
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "Ingrese sus nombres.")]
-        [StringLength(60, MinimumLength = 2, ErrorMessage = "Los nombres deben tener entre 2 y 60 caracteres.")]
-        [RegularExpression(@"^[\p{L} .'\-]+$", ErrorMessage = "Use solo letras y espacios.")]
-        [Display(Name = "Nombres")]
-        public string Nombres { get; set; }
-
-        [Required(ErrorMessage = "Ingrese sus apellidos.")]
-        [StringLength(60, MinimumLength = 2, ErrorMessage = "Los apellidos deben tener entre 2 y 60 caracteres.")]
-        [RegularExpression(@"^[\p{L} .'\-]+$", ErrorMessage = "Use solo letras y espacios.")]
-        [Display(Name = "Apellidos")]
-        public string Apellidos { get; set; }
-
-        [Required(ErrorMessage = "Ingrese un nombre de usuario.")]
-        [StringLength(50, MinimumLength = 4, ErrorMessage = "El usuario debe tener entre 4 y 50 caracteres.")]
-        [RegularExpression(@"^[A-Za-z0-9._@\-]+$", ErrorMessage = "Use letras, números y . _ - @")]
+        [Required]
         [Display(Name = "Nombre de usuario")]
         public string UserName { get; set; }
 
-        [Required(ErrorMessage = "Ingrese su correo electrónico.")]
-        [EmailAddress(ErrorMessage = "Ingrese un correo válido.")]
+        [Required]
+        [EmailAddress]
         [Display(Name = "Correo electrónico")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Ingrese una contraseña.")]
-        [StringLength(100, ErrorMessage = "La contraseña debe tener al menos {2} caracteres.", MinimumLength = 8)]
+        [Required]
+        [StringLength(100, ErrorMessage = "El número de caracteres de {0} debe ser al menos {2}.", MinimumLength = 3)]
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirmar contraseña")]
-        [Compare("Password", ErrorMessage = "La contraseña y la confirmación no coinciden.")]
+        [Compare("Password", ErrorMessage = "La contraseña y la contraseña de confirmación no coinciden.")]
         public string ConfirmPassword { get; set; }
-
-        // El visitante siempre recibe "Cliente": el servidor ignora este valor si quien registra no es SuperUsuario.
-        [Display(Name = "Rol")]
-        public string Rol { get; set; }
-
-        [Display(Name = "Acepto el aviso de privacidad y las condiciones")]
-        public bool AceptaCondiciones { get; set; }
     }
 
     public class ResetPasswordViewModel
@@ -114,14 +97,14 @@ namespace Progra_03.Models
         public string Email { get; set; }
 
         [Required]
-        [StringLength(100, ErrorMessage = "La contraseña debe tener al menos {2} caracteres.", MinimumLength = 8)]
+        [StringLength(100, ErrorMessage = "El número de caracteres de {0} debe ser al menos {2}.", MinimumLength = 3)]
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirmar contraseña")]
-        [Compare("Password", ErrorMessage = "La contraseña y la confirmación no coinciden.")]
+        [Compare("Password", ErrorMessage = "La contraseña y la contraseña de confirmación no coinciden.")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }
@@ -129,8 +112,8 @@ namespace Progra_03.Models
 
     public class ForgotPasswordViewModel
     {
-        [Required(ErrorMessage = "Ingrese su correo electrónico.")]
-        [EmailAddress(ErrorMessage = "Ingrese un correo válido.")]
+        [Required]
+        [EmailAddress]
         [Display(Name = "Correo electrónico")]
         public string Email { get; set; }
     }

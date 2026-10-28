@@ -23,7 +23,7 @@ namespace Progra_03.Controllers
     }
 
     // RNP-09: la autorización se valida en el servidor, no solo ocultando el menú.
-    [Authorize(Roles = "SuperUsuario,Administrador")]
+    [Authorize(Roles = "Administrador")]
     public class RolesController : Controller
     {
         private readonly ApplicationDbContext db;
@@ -48,8 +48,6 @@ namespace Progra_03.Controllers
             return View(lista);
         }
 
-        [Authorize(Roles = "SuperUsuario")]
-
         public ActionResult Editar(string id)
         {
             var usuario = um.FindById(id);
@@ -59,7 +57,6 @@ namespace Progra_03.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "SuperUsuario")]
         public ActionResult Editar(string id, string[] rolesSeleccionados)
         {
             var usuario = um.FindById(id);
