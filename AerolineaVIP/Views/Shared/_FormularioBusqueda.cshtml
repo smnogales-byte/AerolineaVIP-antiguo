@@ -1,0 +1,88 @@
+﻿@model Progra_03.Models.BusquedaVM
+@*
+    Formulario de busqueda compartido por las pantallas 1, 5 y 6. Envia por GET a /Vuelos/Resultados.
+    El selector de destino se llena con jQuery segun el origen (solo destinos alcanzables, DP-09).
+*@
+<form action="@Url.Action("Resultados", "Vuelos")" method="get" id="formBusqueda" novalidate>
+    <div class="row g-3">
+        <div class="col-12 col-md-3">
+            <label for="origenId" class="form-label">Origen *</label>
+            @Html.DropDownList("origenId", Model.Aeropuertos, "Seleccione…", new { @class = "form-select", id = "origenId", required = "required" })
+            <span class="text-danger" id="errOrigen" role="alert"></span>
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="destinoId" class="form-label">Destino *</label>
+            <select id="destinoId" name="destinoId" class="form-select" required data-valor="@Model.DestinoId">
+                <option value="">Seleccione el origen primero</option>
+            </select>
+            <span class="text-danger" id="errDestino" role="alert"></span>
+        </div>
+        <div class="col-6 col-md-2">
+            <label for="fecha" class="form-label">Fecha *</label>
+            <input type="date" id="fecha" name="fecha" class="form-control" required
+                   min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@(Model.Fecha.HasValue ? Model.Fecha.Value.ToString("yyyy-MM-dd") : "")" />
+            <span class="text-danger" id="errFecha" role="alert"></span>
+        </div>
+        <div class="col-6 col-md-2">
+            <label for="pasajeros" class="form-label">Pasajeros *</label>
+            <input type="number" id="pasajeros" name="pasajeros" class="form-control" min="1" max="7" value="@Model.Pasajeros" required />
+            <span class="text-danger" id="errPasajeros" role="alert"></span>
+        </div>
+        <div class="col-12 col-md-2">
+            <label for="horario" class="form-label">Horario</label>
+            <select id="horario" name="horario" class="form-select">
+                @foreach (var h in new[] { "Todos", "Mañana", "Tarde", "Noche" })
+                {
+                    <option value="@h" @(Model.Horario == h ? "selected" : "")>@h</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+        <button type="submit" class="btn btn-vip px-4" id="btnBuscar">Buscar vuelos</button>
+        <span class="text-muted small">Capacidad máxima por vuelo: 7 pasajeros. Los campos con * son obligatorios.</span>
+    </div>
+</form>
+<script>
+    // Se ejecuta cuando jQuery ya esta cargado (el layout lo carga al final de la pagina).
+    window.addEventListener('load', function () {
+        var $o = $('#origenId'), $d = $('#destinoId');
+        var urlDestinos = '@Url.Action("Destinos", "Vuelos")';
+
+        function cargarDestinos() {
+            var origen = $o.val();
+            $d.empty();
+            if (!origen) { $d.append('<option value="">Seleccione el origen primero</option>'); return; }
+            $d.append('<option value="">Cargando…</option>');
+            $.getJSON(urlDestinos, { origenId: origen }, function (lista) {
+                $d.empty().append('<option value="">Seleccione…</option>');
+                var elegido = String($d.data('valor') || '');
+                $.each(lista, function (i, x) {
+                    var o = $('<option>').val(x.id).text(x.texto);
+                    if (String(x.id) === elegido) o.prop('selected', true);
+                    $d.append(o);
+                });
+                if (lista.length === 0) $d.empty().append('<option value="">Sin destinos disponibles</option>');
+            }).fail(function () {
+                $d.empty().append('<option value="">No se pudieron cargar los destinos</option>');
+            });
+        }
+        $o.on('change', function () { $d.data('valor', ''); cargarDestinos(); });
+        cargarDestinos();
+
+        $('#formBusqueda').on('submit', function (e) {
+            var ok = true, hoy = new Date().toISOString().substring(0, 10);
+            $('#errOrigen,#errDestino,#errFecha,#errPasajeros').text('');
+            if (!$o.val()) { $('#errOrigen').text('Seleccione el origen.'); ok = false; }
+            if (!$d.val()) { $('#errDestino').text('Seleccione el destino.'); ok = false; }
+            else if ($d.val() === $o.val()) { $('#errDestino').text('El destino debe ser distinto del origen.'); ok = false; }
+            var f = $('#fecha').val();
+            if (!f) { $('#errFecha').text('Seleccione la fecha.'); ok = false; }
+            else if (f < hoy) { $('#errFecha').text('La fecha no puede ser anterior a hoy.'); ok = false; }
+            var n = parseInt($('#pasajeros').val(), 10);
+            if (isNaN(n) || n < 1 || n > 7) { $('#errPasajeros').text('Indique de 1 a 7 pasajeros.'); ok = false; }
+            if (!ok) { e.preventDefault(); return; }
+            $('#btnBuscar').prop('disabled', true).text('Buscando…');
+        });
+    });
+</script>

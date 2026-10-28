@@ -1,0 +1,118 @@
+﻿@model Progra_03.Models.MisReservasVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Mis reservas";
+}
+<h1 class="h3 titulo-pantalla">Consulta de reservas</h1>
+<p class="subtitulo-pantalla">Aquí aparecen únicamente las reservas de su cuenta.</p>
+
+<div class="panel-vip">
+    @using (Html.BeginForm("MisReservas", "Reservas", FormMethod.Get, new { id = "formFiltro" }))
+    {
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
+        <div class="row g-3 align-items-end">
+            <div class="col-6 col-md-3">
+                <label for="desde" class="form-label">Viaje desde</label>
+                <input type="date" id="desde" name="desde" class="form-control" value="@(Model.Desde.HasValue ? Model.Desde.Value.ToString("yyyy-MM-dd") : "")" />
+            </div>
+            <div class="col-6 col-md-3">
+                <label for="hasta" class="form-label">Viaje hasta</label>
+                <input type="date" id="hasta" name="hasta" class="form-control" value="@(Model.Hasta.HasValue ? Model.Hasta.Value.ToString("yyyy-MM-dd") : "")" />
+                @Html.ValidationMessage("Hasta", "", new { @class = "text-danger" })
+            </div>
+            <div class="col-12 col-md-3">
+                <label for="estado" class="form-label">Estado</label>
+                <select id="estado" name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach (var e in new[] { "PENDIENTE", "CONFIRMADA", "CANCELADA", "EXPIRADA" })
+                    {
+                        <option value="@e" @(Model.Estado == e ? "selected" : "")>@Fmt.EstadoReserva(e)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-noche">Filtrar</button>
+                <a href="@Url.Action("MisReservas")" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.Reservas.Count == 0)
+{
+    <div class="panel-vip text-center">
+        <p class="mb-2">No tiene reservas para los filtros seleccionados.</p>
+        <a class="btn btn-vip" href="@Url.Action("Buscar", "Vuelos")">Buscar vuelos</a>
+    </div>
+}
+else
+{
+    <div class="panel-vip table-responsive">
+        <table class="table table-vip table-hover mb-0">
+            <thead>
+                <tr><th>Código</th><th>Ruta</th><th>Viaje</th><th>Pasajeros</th><th class="text-end">Total</th><th>Reserva</th><th>Compra</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Reservas)
+                {
+                    <tr>
+                        <td><strong>@r.CodigoReserva</strong><div class="small text-muted">@Fmt.FechaHora(r.FechaCreacion)</div></td>
+                        <td>@(Model.Rutas.ContainsKey(r.ReservaId) ? Model.Rutas[r.ReservaId] : "—")</td>
+                        <td>@(r.FechaViaje.HasValue ? Fmt.Fecha(r.FechaViaje.Value) : "—")</td>
+                        <td>@r.Pasajeros</td>
+                        <td class="text-end">@Fmt.Dinero(r.Total)</td>
+                        <td>
+                            <span class="badge @Fmt.ClaseEstado(r.EstadoReservaCodigo) estado-etiqueta">@Fmt.EstadoReserva(r.EstadoReservaCodigo)</span>
+                            @if (r.EstadoReservaCodigo == "PENDIENTE" && r.FechaExpiracion.HasValue)
+                            {
+                                <div class="small text-muted">Vence @Fmt.FechaHora(r.FechaExpiracion.Value)</div>
+                            }
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(r.EstadoCompra))
+                            {
+                                <span class="text-muted">Sin compra</span>
+                            }
+                            else
+                            {
+                                <span class="badge @Fmt.ClaseEstado(r.EstadoCompra) estado-etiqueta">@Fmt.EstadoCompra(r.EstadoCompra)</span>
+                            }
+                        </td>
+                        <td class="text-nowrap">
+                            <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Gestionar", "Reservas", new { id = r.ReservaId })">Ver / gestionar</a>
+                            @if (r.EstadoReservaCodigo == "PENDIENTE")
+                            {
+                                <a class="btn btn-sm btn-vip" href="@Url.Action("Pagar", "Compras", new { id = r.ReservaId })">Pagar</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    if (Model.TotalPaginas > 1)
+    {
+        <nav aria-label="Paginación de reservas">
+            <ul class="pagination justify-content-center">
+                @for (int p = 1; p <= Model.TotalPaginas; p++)
+                {
+                    <li class="page-item @(p == Model.Pagina ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("MisReservas", new { desde = Model.Desde, hasta = Model.Hasta, estado = Model.Estado, pagina = p })">@p</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener('load', function () {
+            $('#formFiltro').on('submit', function (e) {
+                var d = $('#desde').val(), h = $('#hasta').val();
+                if (d && h && h < d) { e.preventDefault(); alert('La fecha final no puede ser anterior a la inicial.'); }
+            });
+        });
+    </script>
+}

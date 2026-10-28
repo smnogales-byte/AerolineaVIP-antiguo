@@ -1,60 +1,109 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Mi aplicación ASP.NET</title>
-    @Styles.Render("~/Content/css")
+    <title>@ViewBag.Title - Aerolínea VIP</title>
+    <link href="@Url.Content("~/Content/bootstrap.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=@System.IO.File.GetLastWriteTime(Server.MapPath("~/Content/Site.css")).Ticks" rel="stylesheet" />
     @Scripts.Render("~/bundles/modernizr")
-
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+    @* Plantilla compartida: todas las pantallas del sistema (publicas, de usuario y administrativas) la usan. *@
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            @Html.ActionLink("Nombre de la aplicación", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Alternar navegación" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" href="@Url.Action("Index", "Home", new { area = "" })">AEROLÍNEA VIP</a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+                    aria-controls="menuPrincipal" aria-expanded="false" aria-label="Alternar navegación">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                @* CAMBIO HU-003 (1 de 2): a esta etiqueta le faltaba el ">" de cierre antes del @if.
-                    Sin él el HTML del menú salía mal formado. No cambia nada más del menú. *@
-                <ul class="navbar-nav flex-grow-1">
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">@Html.ActionLink("Inicio", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Buscar vuelos", "Buscar", "Vuelos", new { area = "" }, new { @class = "nav-link" })</li>
+
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <li>
-                            @Html.ActionLink("Ver Peliculas", "Index", "Home", new { area = "" }, new { @class = "nav-link" })
+                        <li class="nav-item">@Html.ActionLink("Mis reservas", "MisReservas", "Reservas", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Check-in", "Index", "CheckIn", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Comprobantes", "Index", "Comprobantes", new { area = "" }, new { @class = "nav-link" })</li>
+                    }
+
+                    @* Menu administrativo. Ocultar un enlace no protege nada: cada accion valida el rol en el servidor (RNP-09). *@
+                    @if (User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Operaciones") || User.IsInRole("Comercial") || User.IsInRole("Counter"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="menuAdmin" role="button" data-bs-toggle="dropdown" aria-expanded="false">Administración</a>
+                            <ul class="dropdown-menu" aria-labelledby="menuAdmin">
+                                <li>@Html.ActionLink("Panel", "Index", "Admin", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                @if (User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Operaciones"))
+                                {
+                                    <li>@Html.ActionLink("Vuelos y frecuencias", "Vuelos", "Admin", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Aeronaves y asientos", "Aeronaves", "Admin", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                }
+                                @if (User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Counter"))
+                                {
+                                    <li>@Html.ActionLink("Usuarios, pasajeros y reservas", "Gestion", "Admin", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                }
+                                @if (User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Operaciones") || User.IsInRole("Comercial"))
+                                {
+                                    <li>@Html.ActionLink("Reportes", "Reportes", "Admin", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                }
+                                @if (User.IsInRole("SuperUsuario") || User.IsInRole("Administrador"))
+                                {
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>@Html.ActionLink("Roles de usuarios", "Index", "Roles", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                }
+                                @if (User.IsInRole("SuperUsuario") || User.IsInRole("Administrador") || User.IsInRole("Operaciones"))
+                                {
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><h6 class="dropdown-header">Datos operativos (CRUD)</h6></li>
+                                    <li>@Html.ActionLink("Aeropuertos", "Index", "Aeropuertos", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Rutas", "Index", "Rutas", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Frecuencias", "Index", "Frecuencias", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Modelos de aeronave", "Index", "ModelosAeronave", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Aeronaves", "Index", "Aeronaves", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Itinerarios", "Index", "Itinerarios", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                }
+                                @if (User.IsInRole("SuperUsuario") || User.IsInRole("Comercial"))
+                                {
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><h6 class="dropdown-header">Datos comerciales (CRUD)</h6></li>
+                                    <li>@Html.ActionLink("Marcas de tarjeta", "Index", "MarcasTarjeta", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Métodos de pago", "Index", "MetodosPago", new { area = "" }, new { @class = "dropdown-item" })</li>
+                                }
+                            </ul>
                         </li>
                     }
-                    else
-                    {
-                        <li>@Html.ActionLink("Inicio", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Acerca de", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Contacto", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    }
-
-                    @* CAMBIO HU-003 (2 de 2): enlace a la gestión de roles (RolesController).
-                        Solo se muestra a quien tiene el rol Administrador (RF-044, 16.1).
-                        Ocultar el enlace no protege nada: el acceso real se valida en el servidor
-                        con [Authorize(Roles = "Administrador")] en RolesController (RNP-09). *@
-                    @if (User.IsInRole("Administrador"))
-                    {
-                        <li>@Html.ActionLink("Roles", "Index", "Roles", new { area = "" }, new { @class = "nav-link" })</li>
-                    }
-
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
         </div>
     </nav>
+
     <div class="container body-content">
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Mensaje"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - Mi aplicación ASP.NET</p>
+            <p>&copy; @DateTime.Now.Year - Aerolínea VIP &middot; Proyecto académico ESPE. Los pagos y comprobantes son simulados.</p>
         </footer>
     </div>
+
+
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")

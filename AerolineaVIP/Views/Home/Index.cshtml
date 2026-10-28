@@ -1,40 +1,78 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@model Progra_03.Models.BusquedaVM
+@{
+    ViewBag.Title = "Inicio";
 }
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">Molde_Maestro</h1>
-        <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
-
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <div class="card h-100 border shadow">
-                <div class="card-body d-flex flex-column">
-                    <h2 class="card-title" id="gettingStartedTitle">Integrantes</h2>
-                    <p class="card-text">Santiago Nogales</p>
-                </div>
+<section class="hero-vip">
+    <div class="row align-items-end g-4">
+        <div class="col-lg-7">
+            <p class="text-uppercase small mb-2 text-dorado">Aviación ejecutiva en Ecuador</p>
+            <h1 class="display-5">Viaje entre Quito, Guayaquil, Manta y Galápagos en cabinas de solo siete asientos.</h1>
+            <p class="lead mt-3">Reserve su asiento, elija su ubicación en la cabina y gestione su viaje desde un solo lugar.</p>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <a href="@Url.Action("Buscar", "Vuelos")" class="btn btn-vip btn-lg">Buscar vuelos</a>
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <a href="@Url.Action("Login", "Account")" class="btn btn-outline-secondary btn-lg">Iniciar sesión</a>
+                    <a href="@Url.Action("Register", "Account")" class="btn btn-outline-secondary btn-lg">Crear cuenta</a>
+                }
+                else
+                {
+                    <a href="@Url.Action("MisReservas", "Reservas")" class="btn btn-outline-secondary btn-lg">Mis reservas</a>
+                }
             </div>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <div class="card h-100 border shadow-sm text-center">
-                <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                    <h2 class="card-title" id="librariesTitle">Información</h2>
-                    <img src="~/Content/Img/foto.jpeg" alt="Foto de Santiago Nogales" class="rounded-circle my-3 border" style="width: 150px; height: 150px; object-fit: cover;">
-                    <h4 class="mb-1">Santiago Nogales</h4>
-                    <p class="text-muted small mb-3">Ingeniería en Tecnologías de la Información</p>
-                </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="buscador-vip">
+                <h2 class="h5 mb-3">Encuentre su vuelo</h2>
+                @Html.Partial("_FormularioBusqueda", Model)
             </div>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <div class="card h-100 border shadow-sm">
-                <div class="card-body d-flex flex-column">
-                    <h2 class="card-title" id="hostingTitle">Caracteristicas</h2>
-                    <p class="card-text">NRC: 36638</p>
-                </div>
-            </div>
-        </section>
+        </div>
     </div>
-</main>
+</section>
+
+<section class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card tarjeta-destino">
+                <div class="franja"></div>
+                <div class="card-body">
+                    <span class="icono-vip mb-3">1</span>
+                    <h3 class="h5">Busque y compare</h3>
+                    <p class="mb-0">Consulte horarios, itinerarios y asientos disponibles sin necesidad de iniciar sesión.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card tarjeta-destino">
+                <div class="franja"></div>
+                <div class="card-body">
+                    <span class="icono-vip mb-3">2</span>
+                    <h3 class="h5">Elija su asiento</h3>
+                    <p class="mb-0">Siete asientos individuales por vuelo. Verde disponible, morado reservado y rojo ocupado.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card tarjeta-destino">
+                <div class="franja"></div>
+                <div class="card-body">
+                    <span class="icono-vip mb-3">3</span>
+                    <h3 class="h5">Reserve y pague</h3>
+                    <p class="mb-0">Reserve, pague con la simulación académica y consulte su comprobante cuando lo necesite.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="panel-vip">
+    <h2 class="h4 titulo-pantalla">Destinos</h2>
+    <div class="row g-3 mt-1">
+        <div class="col-6 col-md-3"><strong>Quito</strong><br /><span class="text-muted">Aeropuerto Mariscal Sucre (UIO)</span></div>
+        <div class="col-6 col-md-3"><strong>Guayaquil</strong><br /><span class="text-muted">Aeropuerto José Joaquín de Olmedo (GYE)</span></div>
+        <div class="col-6 col-md-3"><strong>Manta</strong><br /><span class="text-muted">Aeropuerto Eloy Alfaro (MEC)</span></div>
+        <div class="col-6 col-md-3"><strong>Galápagos</strong><br /><span class="text-muted">Itinerarios desde Quito con escala en Guayaquil</span></div>
+    </div>
+    <p class="text-muted small mt-3 mb-0">Proyecto académico: las tarifas, los horarios y los pagos son de ejemplo y no representan una oferta comercial real.</p>
+</section>

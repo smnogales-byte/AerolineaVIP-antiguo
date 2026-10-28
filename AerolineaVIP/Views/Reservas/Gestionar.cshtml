@@ -1,0 +1,126 @@
+﻿@model Progra_03.Models.DetalleReservaVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Gestión de reserva";
+    var r = Model.Reserva;
+    bool hayErrorMotivo = !ViewData.ModelState.IsValidField("Motivo");
+}
+<h1 class="h3 titulo-pantalla">Gestión de reserva @r.CodigoReserva</h1>
+<p class="subtitulo-pantalla">Consulte el detalle, continúe el pago o cancele la reserva si corresponde.</p>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="panel-vip table-responsive">
+            <h2 class="h5">Detalle de pasajeros y vuelos</h2>
+            <table class="table table-sm table-vip">
+                <thead><tr><th>Vuelo</th><th>Ruta</th><th>Fecha</th><th>Pasajero</th><th>Asiento</th><th>Estado</th></tr></thead>
+                <tbody>
+                    @foreach (var l in Model.Lineas)
+                    {
+                        <tr>
+                            <td>@l.CodigoVuelo</td>
+                            <td>@l.CiudadOrigen → @l.CiudadDestino</td>
+                            <td>@Fmt.Fecha(l.FechaOperacion) · @Fmt.Hora(l.HoraSalida)</td>
+                            <td>@l.Nombres @l.Apellidos<div class="small text-muted">@l.NumeroDocumento</div></td>
+                            <td>@l.CodigoAsiento</td>
+                            <td>
+                                <span class="badge @Fmt.ClaseEstado(l.EstadoAsignacionCodigo) estado-etiqueta">@l.EstadoAsignacionCodigo</span>
+                                @if (l.CheckInId.HasValue) { <div class="small text-success">Check-in hecho</div> }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel-vip">
+            <h2 class="h5">Estado</h2>
+            <dl class="row mb-2">
+                <dt class="col-5">Reserva</dt>
+                <dd class="col-7"><span class="badge @Fmt.ClaseEstado(r.EstadoReservaCodigo)">@Fmt.EstadoReserva(r.EstadoReservaCodigo)</span></dd>
+                <dt class="col-5">Compra</dt>
+                <dd class="col-7">
+                    @if (Model.Compra == null) { <span class="text-muted">Sin compra</span> }
+                    else { <span class="badge @Fmt.ClaseEstado(Model.Compra.EstadoCompraCodigo)">@Fmt.EstadoCompra(Model.Compra.EstadoCompraCodigo)</span> }
+                </dd>
+                <dt class="col-5">Creada</dt><dd class="col-7">@Fmt.FechaHora(r.FechaCreacion)</dd>
+                @if (r.FechaExpiracion.HasValue && r.EstadoReservaCodigo == "PENDIENTE")
+                {
+                    <dt class="col-5">Vence</dt><dd class="col-7">@Fmt.FechaHora(r.FechaExpiracion.Value)</dd>
+                }
+                <dt class="col-5">Total</dt><dd class="col-7"><strong>@Fmt.Dinero(Model.Total, Model.Moneda)</strong></dd>
+                @if (Model.UltimoPago != null)
+                {
+                    <dt class="col-5">Último pago</dt>
+                    <dd class="col-7"><span class="badge @Fmt.ClaseEstado(Model.UltimoPago.EstadoPagoCodigo)">@Fmt.EstadoPago(Model.UltimoPago.EstadoPagoCodigo)</span><br /><span class="small">@Model.MetodoTexto</span></dd>
+                }
+            </dl>
+
+            <div class="d-grid gap-2">
+                @if (r.EstadoReservaCodigo == "PENDIENTE")
+                {
+                    <a class="btn btn-vip" href="@Url.Action("Pagar", "Compras", new { id = r.ReservaId })">Pagar ahora</a>
+                }
+                @if (r.EstadoReservaCodigo == "CONFIRMADA")
+                {
+                    <a class="btn btn-noche" href="@Url.Action("Index", "CheckIn")">Ir a check-in</a>
+                    <a class="btn btn-outline-dark" href="@Url.Action("Index", "Comprobantes")">Ver comprobantes</a>
+                }
+                @if (Model.PuedeCancelar)
+                {
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar reserva</button>
+                }
+                <a class="btn btn-outline-secondary" href="@Url.Action("MisReservas")">Volver a mis reservas</a>
+            </div>
+            @if (!Model.PuedeCancelar && !string.IsNullOrEmpty(Model.AvisoCancelacion))
+            {
+                <p class="small text-muted mt-3 mb-0">@Model.AvisoCancelacion</p>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.PuedeCancelar)
+{
+    <div class="modal fade" id="modalCancelar" tabindex="-1" aria-labelledby="tituloCancelar" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                @using (Html.BeginForm("Cancelar", "Reservas", new { id = r.ReservaId }, FormMethod.Post, new { id = "formCancelar" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="tituloCancelar">Cancelar reserva @r.CodigoReserva</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Los asientos volverán a estar disponibles. @(string.IsNullOrEmpty(Model.AvisoCancelacion) ? "" : Model.AvisoCancelacion)</p>
+                        <label for="motivo" class="form-label">Motivo de la cancelación * (10 a 300 caracteres)</label>
+                        <textarea id="motivo" name="motivo" class="form-control" rows="3" maxlength="300">@Model.Motivo</textarea>
+                        @Html.ValidationMessage("Motivo", "", new { @class = "text-danger" })
+                        <span class="text-danger" id="errMotivo" role="alert"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Conservar reserva</button>
+                        <button type="submit" class="btn btn-danger">Confirmar cancelación</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener('load', function () {
+            $('#formCancelar').on('submit', function (e) {
+                var m = $.trim($('#motivo').val());
+                if (m.length < 10 || m.length > 300) { e.preventDefault(); $('#errMotivo').text('El motivo debe tener entre 10 y 300 caracteres.'); }
+            });
+            @if (hayErrorMotivo && Model.PuedeCancelar)
+            {
+                <text>new bootstrap.Modal(document.getElementById('modalCancelar')).show();</text>
+            }
+        });
+    </script>
+}

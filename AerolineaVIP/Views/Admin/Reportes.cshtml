@@ -1,0 +1,95 @@
+﻿@model Progra_03.Models.ReportesVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Consultas y reportes";
+}
+<h1 class="h3 titulo-pantalla">Consultas y reportes administrativos</h1>
+<p class="subtitulo-pantalla">Consultas de lectura sobre los datos actuales. No incluye auditoría ni dashboard en esta entrega.</p>
+
+<div class="panel-vip">
+    @using (Html.BeginForm("Reportes", "Admin", FormMethod.Get, new { id = "formReporte" }))
+    {
+        <input type="hidden" name="ejecutar" value="true" />
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label class="form-label" for="Consulta">Consulta *</label>
+                <select id="Consulta" name="Consulta" class="form-select">
+                    <option value="ocupacion" @(Model.Consulta == "ocupacion" ? "selected" : "")>Ocupación por vuelo</option>
+                    <option value="reservas" @(Model.Consulta == "reservas" ? "selected" : "")>Reservas</option>
+                    <option value="compras" @(Model.Consulta == "compras" ? "selected" : "")>Compras y pagos</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2"><label class="form-label" for="Desde">Desde</label>
+                <input type="date" id="Desde" name="Desde" class="form-control" value="@(Model.Desde.HasValue ? Model.Desde.Value.ToString("yyyy-MM-dd") : "")" /></div>
+            <div class="col-6 col-md-2"><label class="form-label" for="Hasta">Hasta</label>
+                <input type="date" id="Hasta" name="Hasta" class="form-control" value="@(Model.Hasta.HasValue ? Model.Hasta.Value.ToString("yyyy-MM-dd") : "")" /></div>
+            <div class="col-12 col-md-3 filtro-ocupacion"><label class="form-label" for="RutaId">Ruta</label>
+                @Html.DropDownList("RutaId", Model.Rutas, "Todas", new { @class = "form-select" })</div>
+            <div class="col-12 col-md-2 filtro-ocupacion"><label class="form-label" for="AeronaveId">Aeronave</label>
+                @Html.DropDownList("AeronaveId", Model.Aeronaves, "Todas", new { @class = "form-select" })</div>
+            <div class="col-12 col-md-2 filtro-estado"><label class="form-label" for="Estado">Estado</label>
+                <input type="text" id="Estado" name="Estado" class="form-control" value="@Model.Estado" placeholder="Ej. PAGADA" /></div>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-noche">Consultar</button>
+                <a class="btn btn-outline-secondary" href="@Url.Action("Reportes")">Limpiar</a>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Ejecutada)
+{
+    if (!string.IsNullOrEmpty(Model.Mensaje))
+    {
+        <div class="alert alert-danger" role="alert">@Model.Mensaje</div>
+    }
+    <div class="panel-vip text-muted">Elija una consulta y pulse «Consultar».</div>
+}
+else
+{
+    <div class="panel-vip table-responsive">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <strong>@Model.Filas.Count</strong> registro(s) · datos al corte @(Model.Corte.HasValue ? Fmt.FechaHora(Model.Corte.Value) : "")
+            </div>
+            @if (Model.Filas.Count > 0)
+            {
+                <a class="btn btn-sm btn-vip" href="@Url.Action("ExportarCsv", new { Consulta = Model.Consulta, Desde = Model.Desde, Hasta = Model.Hasta, RutaId = Model.RutaId, AeronaveId = Model.AeronaveId, Estado = Model.Estado })">Exportar CSV</a>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Mensaje))
+        {
+            <div class="alert alert-info" role="status">@Model.Mensaje</div>
+        }
+        @if (Model.Filas.Count > 0)
+        {
+            <table class="table table-sm table-vip">
+                <thead><tr>@foreach (var c in Model.Columnas) { <th>@c</th> }</tr></thead>
+                <tbody>
+                    @foreach (var f in Model.Filas)
+                    {
+                        var celdas = new[] { f.Col1, f.Col2, f.Col3, f.Col4, f.Col5, f.Col6, f.Col7, f.Col8 };
+                        <tr>@for (int i = 0; i < Model.Columnas.Length; i++) { <td>@celdas[i]</td> }</tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener('load', function () {
+            function ajustar() {
+                var c = $('#Consulta').val();
+                $('.filtro-ocupacion').toggle(c === 'ocupacion');
+                $('.filtro-estado').toggle(c !== 'ocupacion');
+            }
+            $('#Consulta').on('change', ajustar); ajustar();
+            $('#formReporte').on('submit', function (e) {
+                var d = $('#Desde').val(), h = $('#Hasta').val();
+                if (d && h && h < d) { e.preventDefault(); alert('La fecha hasta no puede ser anterior a la fecha desde.'); }
+            });
+        });
+    </script>
+}

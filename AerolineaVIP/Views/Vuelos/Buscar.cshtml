@@ -1,0 +1,41 @@
+﻿@model Progra_03.Models.BusquedaVM
+@{
+    ViewBag.Title = "Buscar vuelos";
+}
+<h1 class="h3 titulo-pantalla">Búsqueda de vuelos</h1>
+<p class="subtitulo-pantalla">Consulte vuelos e itinerarios sin necesidad de iniciar sesión. Para reservar deberá ingresar a su cuenta.</p>
+
+<ol class="pasos" aria-label="Pasos de la compra">
+    <li class="activo">1. Buscar</li><li>2. Asientos</li><li>3. Pasajeros</li><li>4. Reserva</li><li>5. Pago</li>
+</ol>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="panel-vip">
+            <h2 class="h5">Criterios de búsqueda</h2>
+            @Html.Partial("_FormularioBusqueda", Model)
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel-vip">
+            <h2 class="h5">Días de operación por ruta</h2>
+            @if (Model.Rutas.Count == 0)
+            {
+                <p class="text-muted mb-0">Aún no hay frecuencias activas registradas.</p>
+            }
+            else
+            {
+                <table class="table table-sm table-vip mb-0">
+                    <thead><tr><th>Ruta</th><th>Días</th></tr></thead>
+                    <tbody>
+                        @foreach (var r in Model.Rutas)
+                        {
+                            <tr><td>@r.Ruta</td><td>@r.Dias</td></tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            <p class="text-muted small mt-3 mb-0">Los tramos con Galápagos se ofrecen como itinerario completo desde Quito.</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+﻿@model Progra_03.Models.ModeloAeronave
+@{
+    ViewBag.Title = "Detalle";
+}
+<h1 class="h3 titulo-pantalla">Detalle de modelo de aeronave</h1>
+<div class="row"><div class="col-lg-7"><div class="panel-vip">
+    <dl class="row mb-3">
+        <dt class="col-sm-5">Fabricante</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Fabricante)</dd>
+        <dt class="col-sm-5">Nombre del modelo</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.Nombre)</dd>
+        <dt class="col-sm-5">Capacidad de asientos (máximo 7)</dt>
+        <dd class="col-sm-7">@Html.DisplayFor(model => model.CapacidadAsientos)</dd>
+    </dl>
+    @Html.ActionLink("Editar", "Edit", new { id = Model.ModeloAeronaveId }, new { @class = "btn btn-vip" })
+    @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+</div></div></div>

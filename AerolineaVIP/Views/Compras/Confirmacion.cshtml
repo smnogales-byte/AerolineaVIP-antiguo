@@ -1,0 +1,79 @@
+﻿@model Progra_03.Models.DetalleReservaVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Confirmación";
+    var r = Model.Reserva;
+    bool pagada = Model.Compra != null && Model.Compra.EstadoCompraCodigo == "PAGADA";
+    bool rechazado = Model.UltimoPago != null && Model.UltimoPago.EstadoPagoCodigo == "RECHAZADO" && !pagada;
+}
+<h1 class="h3 titulo-pantalla">Confirmación de compra o reserva</h1>
+
+@if (pagada)
+{
+    <div class="alert alert-success" role="status"><strong>Pago aprobado (simulado).</strong> Su reserva @r.CodigoReserva está confirmada y sus asientos figuran como ocupados.</div>
+}
+else if (rechazado)
+{
+    <div class="alert alert-danger" role="alert"><strong>Pago rechazado (simulado).</strong> @Model.UltimoPago.MensajeResultado La reserva sigue pendiente; puede intentar de nuevo con otra tarjeta.</div>
+}
+else if (r.EstadoReservaCodigo == "PENDIENTE")
+{
+    <div class="alert alert-warning" role="status"><strong>Reserva registrada.</strong> Sus asientos están reservados (morado) hasta @(r.FechaExpiracion.HasValue ? Fmt.FechaHora(r.FechaExpiracion.Value) : "el vencimiento"). Complete el pago para confirmarlos.</div>
+}
+else
+{
+    <div class="alert alert-secondary" role="status">Reserva @Fmt.EstadoReserva(r.EstadoReservaCodigo).ToLower().</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="panel-vip table-responsive">
+            <h2 class="h5">Detalle de la reserva @r.CodigoReserva</h2>
+            <table class="table table-sm table-vip">
+                <thead><tr><th>Vuelo</th><th>Ruta</th><th>Fecha y hora</th><th>Pasajero</th><th>Asiento</th><th class="text-end">Importe</th></tr></thead>
+                <tbody>
+                    @foreach (var l in Model.Lineas.Where(x => x.EstadoAsignacionCodigo == "PENDIENTE" || x.EstadoAsignacionCodigo == "CONFIRMADA"))
+                    {
+                        <tr>
+                            <td>@l.CodigoVuelo</td>
+                            <td>@l.CiudadOrigen → @l.CiudadDestino</td>
+                            <td>@Fmt.Fecha(l.FechaOperacion) · @Fmt.Hora(l.HoraSalida)</td>
+                            <td>@l.Nombres @l.Apellidos</td>
+                            <td>@l.CodigoAsiento</td>
+                            <td class="text-end">@Fmt.Dinero(l.ImporteTramo)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel-vip">
+            <h2 class="h5">Resumen</h2>
+            <dl class="row mb-0">
+                <dt class="col-5">Reserva</dt><dd class="col-7"><span class="badge @Fmt.ClaseEstado(r.EstadoReservaCodigo)">@Fmt.EstadoReserva(r.EstadoReservaCodigo)</span></dd>
+                <dt class="col-5">Compra</dt>
+                <dd class="col-7">@if (Model.Compra != null) { <span class="badge @Fmt.ClaseEstado(Model.Compra.EstadoCompraCodigo)">@Fmt.EstadoCompra(Model.Compra.EstadoCompraCodigo)</span> } else { <span class="text-muted">Sin compra</span> }</dd>
+                @if (Model.UltimoPago != null)
+                {
+                    <dt class="col-5">Operación</dt><dd class="col-7">@Model.UltimoPago.CodigoOperacion</dd>
+                    <dt class="col-5">Medio</dt><dd class="col-7 small">@Model.MetodoTexto</dd>
+                }
+                <dt class="col-5">Total</dt><dd class="col-7"><strong>@Fmt.Dinero(Model.Total, Model.Moneda)</strong></dd>
+            </dl>
+            <div class="d-grid gap-2 mt-3">
+                @if (pagada)
+                {
+                    <a class="btn btn-vip" href="@Url.Action("Index", "Comprobantes")">Ver comprobante</a>
+                    <a class="btn btn-noche" href="@Url.Action("Index", "CheckIn")">Ir a check-in</a>
+                }
+                else if (r.EstadoReservaCodigo == "PENDIENTE")
+                {
+                    <a class="btn btn-vip" href="@Url.Action("Pagar", "Compras", new { id = r.ReservaId })">@(rechazado ? "Reintentar pago" : "Pagar ahora")</a>
+                }
+                <a class="btn btn-outline-dark" href="@Url.Action("Gestionar", "Reservas", new { id = r.ReservaId })">Gestionar reserva</a>
+                <a class="btn btn-outline-secondary" href="@Url.Action("MisReservas", "Reservas")">Mis reservas</a>
+            </div>
+        </div>
+    </div>
+</div>

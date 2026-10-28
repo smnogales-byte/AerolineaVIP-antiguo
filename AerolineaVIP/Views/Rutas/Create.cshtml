@@ -1,0 +1,48 @@
+﻿@model Progra_03.Models.Ruta
+@{
+    ViewBag.Title = "Crear ruta";
+}
+<h1 class="h3 titulo-pantalla">Crear ruta</h1>
+<p class="subtitulo-pantalla">Rutas. Los campos obligatorios se validan en el navegador y en el servidor.</p>
+
+<div class="row">
+<div class="col-lg-7">
+<div class="panel-vip">
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.AeropuertoOrigenId, "Aeropuerto de origen", htmlAttributes: new { @class = "form-label" })
+            @Html.DropDownList("AeropuertoOrigenId", null, htmlAttributes: new { @class = "form-select" })
+            @Html.ValidationMessageFor(model => model.AeropuertoOrigenId, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(model => model.AeropuertoDestinoId, "Aeropuerto de destino", htmlAttributes: new { @class = "form-label" })
+            @Html.DropDownList("AeropuertoDestinoId", null, htmlAttributes: new { @class = "form-select" })
+            @Html.ValidationMessageFor(model => model.AeropuertoDestinoId, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(model => model.TarifaReferencial, "Tarifa referencial (USD, ejemplo)", htmlAttributes: new { @class = "form-label" })
+            @Html.EditorFor(model => model.TarifaReferencial, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.TarifaReferencial, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-check mb-3">
+            @Html.EditorFor(model => model.Activa, new { htmlAttributes = new { @class = "form-check-input" } })
+            @Html.LabelFor(model => model.Activa, "Activa", htmlAttributes: new { @class = "form-check-label" })
+            @Html.ValidationMessageFor(model => model.Activa, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-vip">Guardar</button>
+            @Html.ActionLink("Volver a la lista", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
+}
+</div>
+</div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

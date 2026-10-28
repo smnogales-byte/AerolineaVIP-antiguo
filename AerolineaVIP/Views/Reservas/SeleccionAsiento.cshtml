@@ -1,0 +1,172 @@
+﻿@model Progra_03.Models.SeleccionAsientoVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Selección de vuelo y asiento";
+    ViewBag.MostrarElegido = true;
+    int T = Model.Tramos.Count;
+    int P = Model.Pasajeros;
+}
+<h1 class="h3 titulo-pantalla">Selección de vuelo y asiento</h1>
+<p class="subtitulo-pantalla">Elija un asiento para cada pasajero en cada tramo. La selección es <strong>temporal</strong>: el asiento solo queda reservado cuando confirma la reserva.</p>
+
+<ol class="pasos" aria-label="Pasos de la compra">
+    <li class="hecho">1. Buscar</li><li class="activo">2. Asientos</li><li>3. Pasajeros</li><li>4. Reserva</li><li>5. Pago</li>
+</ol>
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="alert alert-danger" role="alert">@Model.Error</div>
+}
+<div id="avisoSeleccion" class="alert alert-warning d-none" role="alert"></div>
+
+@using (Html.BeginForm("SeleccionAsiento", "Reservas", new { id = Model.VueloId }, FormMethod.Post, new { id = "formAsientos" }))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="pasajeros" value="@P" />
+    <input type="hidden" name="tramos" value="@Model.TramosCsv" />
+    @* Un valor por pasajero y tramo, en el orden pasajero * tramos + tramo. 0 = sin asignar. *@
+    for (int p = 0; p < P; p++)
+    {
+        for (int t = 0; t < T; t++)
+        {
+            int idx = p * T + t;
+            int previo = idx < Model.Previo.Count ? Model.Previo[idx] : 0;
+            <input type="hidden" name="asientos" value="@previo" data-p="@p" data-t="@t" />
+        }
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="panel-vip">
+                <h2 class="h5">Pasajero que está seleccionando</h2>
+                <div class="btn-group flex-wrap" role="group" aria-label="Pasajero activo">
+                    @for (int p = 0; p < P; p++)
+                    {
+                        <input type="radio" class="btn-check" name="pasajeroActivo" id="pa@(p)" value="@p" autocomplete="off" @(p == 0 ? "checked" : "") />
+                        <label class="btn btn-outline-dark" for="pa@(p)">Pasajero @(p + 1)</label>
+                    }
+                </div>
+                <p class="small text-muted mt-2 mb-0">Elija un pasajero y pulse un asiento verde. Pulse de nuevo su asiento para quitarlo.</p>
+            </div>
+
+            @for (int t = 0; t < T; t++)
+            {
+                var tm = Model.Tramos[t];
+                var v = tm.Vuelo;
+                <div class="panel-vip">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <h2 class="h5">Tramo @(t + 1): @v.CiudadOrigen → @v.CiudadDestino</h2>
+                            <dl class="row small mb-0">
+                                <dt class="col-5">Vuelo</dt><dd class="col-7">@v.CodigoVuelo</dd>
+                                <dt class="col-5">Fecha</dt><dd class="col-7">@Fmt.Fecha(v.FechaOperacion)</dd>
+                                <dt class="col-5">Salida / llegada</dt><dd class="col-7">@Fmt.Hora(v.HoraSalida) / @Fmt.Hora(v.HoraLlegada)</dd>
+                                <dt class="col-5">Aeronave</dt><dd class="col-7">@(v.Matricula ?? "Sin asignar")</dd>
+                                <dt class="col-5">Capacidad</dt><dd class="col-7">@Reglas.CapacidadMaxima asientos</dd>
+                                <dt class="col-5">Disponibles</dt><dd class="col-7">@(tm.Asientos.Count(a => a.EstadoVisual == "DISPONIBLE"))</dd>
+                            </dl>
+                            @if (!tm.Asientos.Any(a => a.EstadoVisual == "DISPONIBLE"))
+                            {
+                                <div class="alert alert-danger mt-2 mb-0" role="alert">No quedan asientos disponibles en este vuelo.</div>
+                            }
+                        </div>
+                        <div class="col-md-7">
+                            @Html.Partial("_MapaAsientos", new MapaAsientosVM { Asientos = tm.Asientos, Seleccionable = true, Prefijo = t.ToString() })
+                        </div>
+                    </div>
+                </div>
+            }
+            @Html.Partial("_Leyenda")
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel-vip" id="resumen">
+                <h2 class="h5">Resumen</h2>
+                <table class="table table-sm">
+                    <thead><tr><th>Pasajero</th>@for (int t = 0; t < T; t++) { <th>Tramo @(t + 1)</th> }</tr></thead>
+                    <tbody>
+                        @for (int p = 0; p < P; p++)
+                        {
+                            <tr id="fila@(p)"><td>Pasajero @(p + 1)</td>@for (int t = 0; t < T; t++) { <td data-resumen="@p-@t">—</td> }</tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="small text-muted">Esta selección es temporal y no equivale a una reserva confirmada.</p>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-vip btn-lg" id="btnContinuar" disabled="disabled">Continuar</button>
+                    <a class="btn btn-outline-secondary" href="javascript:history.back()">Regresar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener('load', function () {
+            var T = @T, P = @P;
+            var mapaCodigos = {};   // tramo -> { numero: codigo }
+            $('button.asiento[data-numero]').each(function () {
+                var t = $(this).data('tramo');
+                mapaCodigos[t] = mapaCodigos[t] || {};
+                mapaCodigos[t][$(this).data('numero')] = $(this).data('codigo');
+            });
+
+            function campo(p, t) { return $('input[name="asientos"][data-p="' + p + '"][data-t="' + t + '"]'); }
+
+            function pintar() {
+                var completo = true;
+                $('button.asiento[data-numero]').removeClass('elegido').attr('aria-pressed', 'false');
+                for (var p = 0; p < P; p++) {
+                    for (var t = 0; t < T; t++) {
+                        var n = parseInt(campo(p, t).val(), 10) || 0;
+                        var celda = $('[data-resumen="' + p + '-' + t + '"]');
+                        if (n > 0) {
+                            var btn = $('button.asiento[data-tramo="' + t + '"][data-numero="' + n + '"]');
+                            btn.addClass('elegido').attr('aria-pressed', 'true');
+                            var etiqueta = btn.find('small');
+                            celda.text(btn.data('codigo') || n);
+                        } else { celda.text('—'); completo = false; }
+                    }
+                }
+                // Etiqueta "P1", "P2" sobre el asiento elegido
+                $('button.asiento[data-numero] small').each(function () {
+                    var b = $(this).closest('button');
+                    $(this).text(b.hasClass('elegido') ? 'Elegido' : 'Disponible');
+                });
+                $('#btnContinuar').prop('disabled', !completo);
+            }
+
+            $('button.asiento[data-numero]').on('click', function () {
+                var t = parseInt($(this).data('tramo'), 10);
+                var n = parseInt($(this).data('numero'), 10);
+                var activo = parseInt($('input[name="pasajeroActivo"]:checked').val(), 10) || 0;
+                var aviso = $('#avisoSeleccion').addClass('d-none').text('');
+                // Si el asiento ya es de otro pasajero en este tramo, se lo avisa y no se duplica.
+                for (var p = 0; p < P; p++) {
+                    if (p !== activo && parseInt(campo(p, t).val(), 10) === n) {
+                        aviso.text('El asiento ' + $(this).data('codigo') + ' ya está asignado al pasajero ' + (p + 1) + ' en este tramo.').removeClass('d-none');
+                        return;
+                    }
+                }
+                var actual = parseInt(campo(activo, t).val(), 10) || 0;
+                campo(activo, t).val(actual === n ? 0 : n);   // pulsar de nuevo lo quita
+                pintar();
+                // Avanza al siguiente pasajero sin asiento en este tramo
+                if (actual !== n) {
+                    for (var k = 1; k <= P; k++) {
+                        var q = (activo + k) % P;
+                        if ((parseInt(campo(q, t).val(), 10) || 0) === 0) { $('#pa' + q).prop('checked', true); break; }
+                    }
+                }
+            });
+
+            $('#formAsientos').on('submit', function (e) {
+                var ok = true;
+                $('input[name="asientos"]').each(function () { if ((parseInt($(this).val(), 10) || 0) === 0) ok = false; });
+                if (!ok) { e.preventDefault(); $('#avisoSeleccion').text('Asigne un asiento a todos los pasajeros en todos los tramos.').removeClass('d-none'); }
+            });
+            pintar();
+        });
+    </script>
+}

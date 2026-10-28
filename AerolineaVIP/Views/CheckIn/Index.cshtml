@@ -1,0 +1,100 @@
+﻿@model Progra_03.Models.CheckInVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Check-in";
+}
+<h1 class="h3 titulo-pantalla">Check-in</h1>
+<p class="subtitulo-pantalla">
+    Disponible desde @Reglas.HorasAperturaCheckIn horas hasta @Reglas.HorasCierreCheckIn hora antes de la salida (ventana propuesta, pendiente de aprobación).
+</p>
+
+@if (!string.IsNullOrEmpty(Model.Mensaje))
+{
+    <div class="alert alert-success" role="status">@Model.Mensaje</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="panel-vip">
+            <h2 class="h5">Buscar la reserva</h2>
+            @using (Html.BeginForm("Buscar", "CheckIn", FormMethod.Post, new { id = "formCheckIn" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger", role = "alert" })
+                <div class="mb-3">
+                    @Html.LabelFor(m => m.CodigoReserva, "Código de reserva *", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.CodigoReserva, new { @class = "form-control text-uppercase", placeholder = "RV00000000", maxlength = "10", autocomplete = "off" })
+                    @Html.ValidationMessageFor(m => m.CodigoReserva, "", new { @class = "text-danger" })
+                </div>
+                <div class="mb-3">
+                    @Html.LabelFor(m => m.NumeroDocumento, "Documento del pasajero *", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.NumeroDocumento, new { @class = "form-control", maxlength = "20", autocomplete = "off" })
+                    @Html.ValidationMessageFor(m => m.NumeroDocumento, "", new { @class = "text-danger" })
+                </div>
+                <button type="submit" class="btn btn-noche">Buscar</button>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        @if (Model.Lineas.Count == 0)
+        {
+            <div class="panel-vip text-muted">Ingrese el código de la reserva y el documento del pasajero para ver sus vuelos.</div>
+        }
+        else
+        {
+            using (Html.BeginForm("Confirmar", "CheckIn", FormMethod.Post, new { id = "formConfirmar" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.CodigoReserva)
+                @Html.HiddenFor(m => m.NumeroDocumento)
+                <div class="panel-vip table-responsive">
+                    <h2 class="h5">Vuelos de la reserva @Model.CodigoReserva</h2>
+                    <table class="table table-vip table-sm">
+                        <thead><tr><th></th><th>Vuelo</th><th>Ruta</th><th>Salida</th><th>Pasajero</th><th>Asiento</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            @foreach (var l in Model.Lineas)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (l.Elegible)
+                                        {
+                                            <input type="checkbox" name="Seleccionadas" value="@l.Linea.AsignacionId" class="form-check-input" aria-label="Seleccionar vuelo @l.Linea.CodigoVuelo" />
+                                        }
+                                    </td>
+                                    <td>@l.Linea.CodigoVuelo</td>
+                                    <td>@l.Linea.CiudadOrigen → @l.Linea.CiudadDestino</td>
+                                    <td>@Fmt.Fecha(l.Linea.FechaOperacion) · @Fmt.Hora(l.Linea.HoraSalida)</td>
+                                    <td>@l.Linea.Nombres @l.Linea.Apellidos</td>
+                                    <td>@l.Linea.CodigoAsiento</td>
+                                    <td><span class="badge @(l.Linea.CheckInId.HasValue ? "text-bg-success" : (l.Elegible ? "text-bg-warning" : "text-bg-secondary"))">@l.Estado</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @if (Model.Lineas.Any(x => x.Elegible))
+                    {
+                        <button type="submit" class="btn btn-vip" id="btnCheckIn">Registrar check-in</button>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Ningún vuelo admite check-in en este momento.</p>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        window.addEventListener('load', function () {
+            $('#CodigoReserva').on('input', function () { this.value = this.value.toUpperCase(); });
+            $('#formConfirmar').on('submit', function (e) {
+                if ($('input[name="Seleccionadas"]:checked').length === 0) { e.preventDefault(); alert('Seleccione al menos un vuelo.'); return; }
+                $('#btnCheckIn').prop('disabled', true).text('Registrando…');
+            });
+        });
+    </script>
+}

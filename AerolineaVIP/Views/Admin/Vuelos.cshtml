@@ -1,0 +1,155 @@
+﻿@model Progra_03.Models.AdminVuelosVM
+@using Progra_03.Models
+@{
+    ViewBag.Title = "Vuelos e itinerarios";
+}
+<h1 class="h3 titulo-pantalla">Administración de vuelos e itinerarios</h1>
+<p class="subtitulo-pantalla">Los vuelos se generan a partir de las frecuencias activas. Sin aeronave asignada un vuelo no se comercializa.</p>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link @(Model.Pestana == "vuelos" ? "active" : "")" href="@Url.Action("Vuelos", new { pestana = "vuelos" })">Vuelos</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Pestana == "frecuencias" ? "active" : "")" href="@Url.Action("Vuelos", new { pestana = "frecuencias" })">Frecuencias</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Pestana == "itinerarios" ? "active" : "")" href="@Url.Action("Vuelos", new { pestana = "itinerarios" })">Itinerarios</a></li>
+</ul>
+
+@if (Model.Pestana == "vuelos")
+{
+    <div class="panel-vip">
+        @using (Html.BeginForm("Vuelos", "Admin", FormMethod.Get))
+        {
+            <input type="hidden" name="pestana" value="vuelos" />
+            <div class="row g-3 align-items-end">
+                <div class="col-6 col-md-2"><label class="form-label" for="desde">Desde</label>
+                    <input type="date" id="desde" name="desde" class="form-control" value="@(Model.Desde.HasValue ? Model.Desde.Value.ToString("yyyy-MM-dd") : "")" /></div>
+                <div class="col-6 col-md-2"><label class="form-label" for="hasta">Hasta</label>
+                    <input type="date" id="hasta" name="hasta" class="form-control" value="@(Model.Hasta.HasValue ? Model.Hasta.Value.ToString("yyyy-MM-dd") : "")" /></div>
+                <div class="col-12 col-md-3"><label class="form-label" for="rutaId">Ruta</label>
+                    @Html.DropDownList("rutaId", Model.Rutas, "Todas", new { @class = "form-select", id = "rutaId" })</div>
+                <div class="col-12 col-md-2"><label class="form-label" for="estado">Estado</label>
+                    @Html.DropDownList("estado", Model.Estados, "Todos", new { @class = "form-select", id = "estado" })</div>
+                <div class="col-12 col-md-3 d-flex gap-2 flex-wrap">
+                    <div class="form-check me-2"><input class="form-check-input" type="checkbox" id="verConflictos" name="verConflictos" value="true" @(Model.VerConflictos ? "checked" : "") />
+                        <label class="form-check-label" for="verConflictos">Ver conflictos</label></div>
+                    <button type="submit" class="btn btn-noche">Filtrar</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="panel-vip">
+        <h2 class="h5">Generar vuelos desde las frecuencias</h2>
+        @using (Html.BeginForm("GenerarVuelos", "Admin", FormMethod.Post, new { id = "formGenerar" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="row g-3 align-items-end">
+                <div class="col-6 col-md-3"><label class="form-label" for="fechaInicio">Fecha inicial *</label><input type="date" id="fechaInicio" name="fechaInicio" class="form-control" required /></div>
+                <div class="col-6 col-md-3"><label class="form-label" for="fechaFin">Fecha final *</label><input type="date" id="fechaFin" name="fechaFin" class="form-control" required /></div>
+                <div class="col-12 col-md-3"><button type="submit" class="btn btn-vip">Generar vuelos</button></div>
+            </div>
+            <div class="form-text">Máximo 366 días. Los vuelos que ya existen no se duplican.</div>
+        }
+    </div>
+
+    @if (Model.VerConflictos)
+    {
+        <div class="panel-vip">
+            <h2 class="h5">Conflictos de asignación</h2>
+            @if (Model.Conflictos.Count == 0)
+            {
+                <p class="mb-0 text-success">No se encontraron aeronaves con vuelos superpuestos.</p>
+            }
+            else
+            {
+                <div class="alert alert-warning small">Una misma aeronave tiene horarios que se solapan. No se ha definido un tiempo de preparación entre vuelos (DP-02).</div>
+                <table class="table table-sm table-vip">
+                    <thead><tr><th>Aeronave</th><th>Fecha</th><th>Vuelo A</th><th>Vuelo B</th></tr></thead>
+                    <tbody>
+                        @foreach (var k in Model.Conflictos)
+                        {
+                            <tr><td>@k.Matricula</td><td>@Fmt.Fecha(k.FechaA)</td>
+                                <td>@k.CodigoVueloA (@Fmt.Hora(k.SalidaA) - @Fmt.Hora(k.LlegadaA))</td>
+                                <td>@k.CodigoVueloB (@Fmt.Hora(k.SalidaB) - @Fmt.Hora(k.LlegadaB))</td></tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    }
+
+    <div class="panel-vip table-responsive">
+        @if (Model.Vuelos.Count == 0)
+        {
+            <p class="mb-0 text-muted">No hay vuelos para los filtros. Genere vuelos con el formulario superior.</p>
+        }
+        else
+        {
+            <table class="table table-sm table-vip table-hover">
+                <thead><tr><th>Vuelo</th><th>Fecha</th><th>Ruta</th><th>Horario</th><th>Aeronave</th><th>Ocupación</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var v in Model.Vuelos)
+                    {
+                        <tr>
+                            <td>@v.CodigoVuelo</td>
+                            <td>@Fmt.Fecha(v.FechaOperacion)</td>
+                            <td>@v.CiudadOrigen → @v.CiudadDestino</td>
+                            <td>@Fmt.Hora(v.HoraSalida) - @Fmt.Hora(v.HoraLlegada)</td>
+                            <td>@if (v.Matricula == null) { <span class="badge text-bg-warning">Sin asignar</span> } else { @v.Matricula }</td>
+                            <td>@v.Ocupados / @v.Capacidad</td>
+                            <td><span class="badge @Fmt.ClaseEstado(v.EstadoVueloCodigo)">@Fmt.EstadoVuelo(v.EstadoVueloCodigo)</span></td>
+                            <td><a class="btn btn-sm btn-outline-dark" href="@Url.Action("EditarVuelo", new { id = v.VueloId })">Editar</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <p class="small text-muted mb-0">Se muestran hasta 300 vuelos.</p>
+        }
+    </div>
+}
+else if (Model.Pestana == "frecuencias")
+{
+    <div class="panel-vip table-responsive">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h5 mb-0">Frecuencias aprobadas</h2>
+            <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Frecuencias")">Administrar (CRUD)</a>
+        </div>
+        <table class="table table-sm table-vip">
+            <thead><tr><th>Ruta</th><th>Día</th><th>Salida</th><th>Llegada</th><th>Activa</th></tr></thead>
+            <tbody>
+                @foreach (var f in Model.Frecuencias)
+                {
+                    <tr><td>@f.RutaId</td><td>@Fmt.DiaSemana(f.DiaSemana)</td><td>@Fmt.Hora(f.HoraSalida)</td><td>@Fmt.Hora(f.HoraLlegada)</td><td>@(f.Activa ? "Sí" : "No")</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="panel-vip">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h5 mb-0">Itinerarios</h2>
+            <a class="btn btn-sm btn-outline-dark" href="@Url.Action("Index", "Itinerarios")">Administrar (CRUD)</a>
+        </div>
+        <table class="table table-sm table-vip">
+            <thead><tr><th>Referencia</th><th>Nombre</th><th>Tramos</th><th>Estado</th></tr></thead>
+            <tbody>
+                @foreach (var i in Model.Itinerarios)
+                {
+                    <tr><td>@i.Referencia</td><td>@i.Nombre</td><td>@i.TramoItinerarios.Count</td>
+                        <td><span class="badge @Fmt.ClaseEstado(i.EstadoItinerarioCodigo)">@i.EstadoItinerarioCodigo</span></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        window.addEventListener('load', function () {
+            $('#formGenerar').on('submit', function (e) {
+                var a = $('#fechaInicio').val(), b = $('#fechaFin').val();
+                if (a && b && b < a) { e.preventDefault(); alert('La fecha final no puede ser anterior a la inicial.'); }
+            });
+        });
+    </script>
+}
