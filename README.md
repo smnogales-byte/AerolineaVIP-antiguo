@@ -74,6 +74,15 @@ Se crean al arrancar la aplicación. Las claves de prueba están definidas en `s
 | Pasajero | pasajero@aerolineavip.com |
 | Cliente | cliente@aerolineavip.com |
 
+Para comprobar que se crearon, después de ejecutar el proyecto por primera vez, abrir una *Nueva consulta* sobre `AerolineaVIP_Identity` en SSMS y ejecutar:
+
+```sql
+SELECT Name FROM AspNetRoles;
+SELECT Email FROM AspNetUsers;
+```
+
+Deben aparecer los 7 roles y los 7 usuarios de la tabla anterior.
+
 ## 5. Qué revisar (recorrido sugerido)
 
 1. **Inicio** (`/`): página principal con logo, nombre y formulario de búsqueda.
