@@ -47,6 +47,14 @@ Se crean automáticamente al iniciar la aplicación (`Global.asax.cs`). Las clav
 | Pasajero | pasajero@aerolineavip.com |
 | Cliente | cliente@aerolineavip.com |
 
+## Funciones por rol
+
+- **Visitante:** busca vuelos, consulta disponibilidad y asientos sin iniciar sesión.
+- **Pasajero y Cliente:** se registra, reserva, elige asiento, paga (simulado), consulta sus reservas y comprobantes.
+- **Counter:** atiende reservas y check-in de los pasajeros.
+- **Comercial, Operaciones y Administrador:** gestionan catálogos, vuelos, flota y reportes según su rol.
+- **SuperUsuario:** administra roles y usuarios.
+
 ## Estado del proyecto
 
 - **Versión:** `v1.0-primera-entrega`
