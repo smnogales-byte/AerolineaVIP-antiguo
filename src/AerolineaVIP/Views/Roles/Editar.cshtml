@@ -1,0 +1,27 @@
+﻿@model Progra_03.Controllers.EditarRolesVM
+@{
+    ViewBag.Title = "Editar roles";
+}
+
+<h2>Editar roles</h2>
+<h4>@Model.Email</h4>
+
+@using (Html.BeginForm("Editar", "Roles", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    foreach (var rol in Model.TodosLosRoles)
+    {
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="rolesSeleccionados" value="@rol" @(Model.RolesActuales.Contains(rol) ? "checked" : "") />
+                @rol
+            </label>
+        </div>
+    }
+
+    <input type="submit" value="Guardar" class="btn btn-primary" />
+    @Html.ActionLink("Volver", "Index", null, new { @class = "btn btn-default" })
+}

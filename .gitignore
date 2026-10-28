@@ -13,8 +13,8 @@ packages/
 *.log
 [Dd]ebug/
 [Rr]elease/
-App_Data/*.mdf
-App_Data/*.ldf
+**/App_Data/*.mdf
+**/App_Data/*.ldf
 Entregable/
 _respaldo_antes_primera_entrega/
 _paquete_entrega1.zip
